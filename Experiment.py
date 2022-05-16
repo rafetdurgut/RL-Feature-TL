@@ -23,7 +23,7 @@ class Experiment:
         self.operator_selector = operator_selector
         self.optimizer.operator_selector = self.operator_selector
         self.optimizer.operator_pool = self.operators
-        self.operator_selector.set_algorithm(self.optimizer)
+        
         for o in self.operators:
             o.set_algorithm(self.optimizer)
         #Logging
@@ -33,14 +33,20 @@ class Experiment:
         if self.clear_history :
             self.algorithm_logger.clear_history()
             self.aos_logger.clear_history()
+
     def Run(self):
         self.times = []
         for run in range(self.runs):
             start_time = time.time()
+            self.operator_selector.set_algorithm(self.optimizer,run)
             self.optimizer.run()
             self.times.append( time.time() - start_time) 
             self.algorithm_logger.log()
             self.aos_logger.log()
+            self.optimizer.reset()
+            
+
+            
 
 
 

@@ -29,7 +29,7 @@ class Logger:
         for o in self.outs:
             if hasattr(self.object, o):
                 writing_data = getattr(self.object, o)
-                if isinstance(writing_data,list):
+                if isinstance(writing_data,(list,np.ndarray)):
                     #writing_data = np.asarray(writing_data)
                     file_name = self.out_folder + '/' + o + '-' + self.conf + '-' + self.ID +'.csv'
                     # if writing_data.ndim > 2:

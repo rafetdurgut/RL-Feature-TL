@@ -26,6 +26,9 @@ class binABC(AbstractOperator):
         # it calls one time objective function. So our Abstractoperator returns it
         i.evaluate()
         return i
+    def __str__(self):
+        return "binABC"
+
 
 
 class bitABC(AbstractOperator):
@@ -37,6 +40,8 @@ class bitABC(AbstractOperator):
         # it calls one time objective function. So our Abstractoperator returns it
         i.evaluate()
         return i
+    def __str__(self):
+        return "bitABC"
 
 
 class ibinABC(AbstractOperator):
@@ -61,6 +66,8 @@ class ibinABC(AbstractOperator):
                 i.solution[d] = i.solution[d] ^ (not (i.solution[d] ^ n.solution[d]))
         i.evaluate()
         return i
+    def __str__(self):
+        return "ibinABC"
 
 
 class nABC(AbstractOperator):
@@ -72,6 +79,8 @@ class nABC(AbstractOperator):
         i.solution[rand_perm] = k.solution[rand_perm]
         i.evaluate()
         return i
+    def __str__(self):
+        return "nABC"
 
 
 class BABC(AbstractOperator):
@@ -100,6 +109,8 @@ class BABC(AbstractOperator):
 
     def costFE(self):
         return 2
+    def __str__(self):
+        return "BABC"
 
 
 class disABC(AbstractOperator):
@@ -114,7 +125,10 @@ class disABC(AbstractOperator):
         M11 = np.sum(np.logical_and(i.solution, n.solution))
         M10 = np.sum(np.logical_and(i.solution, np.logical_not(n.solution)))
         M01 = np.sum(np.logical_and(n.solution, np.logical_not(i.solution)))
-        A = phi * (1 - (M11 / (M11 + M01 + M10)))
+        if (M11 + M01 + M10)==0:
+            A = phi
+        else:
+            A = phi * (1 - (M11 / (M11 + M01 + M10)))
         z = 500000
         m11v = 0
         m10v = 0
@@ -137,6 +151,8 @@ class disABC(AbstractOperator):
         i.solution[Qxi[bitsM10]] = True
         i.evaluate()
         return i
+    def __str__(self):
+        return "disABC"
 
 
 class flipABC(AbstractOperator):
@@ -145,6 +161,8 @@ class flipABC(AbstractOperator):
         i.solution[d1] = not(i.solution[d1])
         i.evaluate()
         return i
+    def __str__(self):
+        return "flipABC"
 
 
 class GBABC(AbstractOperator):
@@ -203,6 +221,8 @@ class GBABC(AbstractOperator):
     def costFE(self):
         # there are 4 children for calculating objective_func
         return 4
+    def __str__(self):
+        return "GBABC"
 
 
 class twoOptABC(AbstractOperator):
@@ -227,3 +247,5 @@ class twoOptABC(AbstractOperator):
     def costFE(self):
         # two children
         return 2
+    def __str__(self):
+        return "2optABC"

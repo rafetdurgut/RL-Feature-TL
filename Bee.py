@@ -7,7 +7,9 @@ class Bee:
         self.fitness = 0
         self.cost = 0
         self.prev_solution = []
+        self.prev_cost = None
         self.trial = 0
+        self.normalize = 1
         self.features = []
         
         if solution is None:
@@ -18,20 +20,29 @@ class Bee:
 
     def calculate_features(self, colony):
         #Solution Distance
-        self.features = np.zeros((colony.feature_size,))
-        self.features[0] = np.count_nonzero(colony.global_best.solution != self.solution)/self.problem.dimension
+        
+        self.features = np.zeros((7,))
+        self.features[0] = np.count_nonzero(colony.global_best.solution != self.prev_solution)/self.problem.dimension
+        self.features[1] = np.count_nonzero(self.solution != self.prev_solution)/self.problem.dimension
 
         #Objective Distance
-        self.features[1] = (colony.global_best.cost - self.cost)/colony.global_best.cost
+        if self.problem.ptype == 0:
+            self.features[2] = abs(colony.global_best.cost - self.prev_cost)/colony.global_best.cost
+            self.features[3] = abs(self.prev_cost - self.cost)/self.prev_cost
+            cbest=min(colony.colony, key=lambda b: b.cost)
+            cworst=max(colony.colony, key=lambda b: b.cost)
+            
+        else:
+            self.features[2] = abs(colony.global_best.cost - self.prev_cost)/colony.global_best.cost
+            self.features[3] = abs(self.prev_cost - self.cost)/self.prev_cost
+            cbest=max(colony.colony, key=lambda b: b.cost)
+            cworst=min(colony.colony, key=lambda b: b.cost)
 
+        self.features[4] = np.count_nonzero(cbest.solution != self.prev_solution)/self.problem.dimension
+        self.features[5] = np.count_nonzero(cworst.solution != self.prev_solution)/self.problem.dimension
         #Trial Distance
-        self.features[2] = (colony.landscape_features[-1][4] - self.trial)/100
-        self.features[3] = (self.trial)/100
+        self.features[6] = self.trial/colony.limit
 
-        #Updated Bits
-        self.features[4] = np.count_nonzero(self.prev_solution != self.solution)/self.problem.dimension
-        self.features[5] = (np.count_nonzero(colony.global_best.solution != self.prev_solution) - np.count_nonzero(colony.global_best.solution != self.solution))/self.problem.dimension
-    
     def evaluate(self):
         self.solution, self.cost = self.problem.objective_function(self.solution)
         self.calculate_fitness()
@@ -43,7 +54,10 @@ class Bee:
         self.evaluate()
 
     def get_better(self, candidate):
-        if candidate.cost > self.cost:
+        if candidate.cost < self.cost and self.problem.ptype==0:
+            candidate.trial = 0
+            return candidate
+        elif candidate.cost > self.cost and self.problem.ptype==1:
             candidate.trial = 0
             return candidate
         else:
@@ -54,4 +68,7 @@ class Bee:
         return f'Trial:{self.trial}, Cost:{self.cost}'
 
     def calculate_fitness(self):
-        self.fitness = 1 + self.cost
+        if (self.cost>0):
+            self.fitness =(1/(1+self.cost))
+        else:
+            self.fitness = 1 + abs(self.cost)

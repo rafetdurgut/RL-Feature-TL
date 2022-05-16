@@ -1,3 +1,4 @@
+import struct
 import numpy as np
 from os import listdir
 from os.path import isfile, join
@@ -5,22 +6,39 @@ from copy import deepcopy
 
 
 class AbstractBaseProblem:
+    bit_dimension= 20
+    
     def objective_function(self):
         raise NotImplemented
+    
+    def binstrtosol(self,solution):
+        temp_sol = []
+        for i in range(int(self.dimension/self.bit_dimension)):
+            temp = solution[i*self.bit_dimension:(i+1)*self.bit_dimension]
+            sign = int(temp[0])
+            p = temp[1:self.p+1]
+            q = temp[self.p+1:]
+            f =  sum(int(v)*(2**i) for i,v in enumerate(reversed(p)))
+            qq = sum(int(v)*(1/(2**i)) for i,v in enumerate(q))
+            val = (-1)**sign * (f+qq)
+            temp_sol.append(val)
+        return temp_sol
 
 
 class OneMax(AbstractBaseProblem):
     def __init__(self, dimension):
         self.pname = 'OneMax'
+        self.ptype = 1
+        self.dosyaAdi = str(dimension)
         self.dimension = dimension
         self.ID = str(dimension)
         self.best = dimension
         #Temp vars
-        self.m = 100
+        self.m =100
         self.n=100
 
     def objective_function(self, solution):
-        return solution, np.sum(solution==0)
+        return solution, np.sum(solution)
 
 class Task:
     def __init__(self, head, tail, s_cost, demand, dead_cost, inverse=-1):
@@ -182,6 +200,7 @@ class ZeroOneKnapsack(AbstractBaseProblem):
         print(self.dosyaAdi)
         self.weights = []
         self.profits = []
+        self.ID = self.dosyaAdi
         self.qualities = []
         self.non_qualities = []
         with open(f"{folderName}/{self.dosyaAdi}") as f:
@@ -230,10 +249,11 @@ class ZeroOneKnapsack(AbstractBaseProblem):
         #print("cap:"+ str(cap_val))
         sum_val = np.sum(self.profits, where=solution)
         return solution, sum_val
-
+        
 class SetUnionKnapsack(AbstractBaseProblem):
     def __init__(self, folderName, fileNo):
         mypath = folderName
+        self.ptype = 1
         filenames = [f for f in listdir(mypath) if isfile(join(mypath, f))]
         self.ID = filenames[fileNo]
         self.dosyaAdi = filenames[fileNo]
@@ -332,3 +352,367 @@ class SetUnionKnapsack(AbstractBaseProblem):
 
         sum_val = np.sum(self.p[i] for i, val in enumerate(solution) if val)
         return solution, sum_val
+
+class Sphere(AbstractBaseProblem):
+    def __init__(self,dimension,bounds=[-100, 100]):
+        self.name="sphere"
+        self.ID=f"sphere-{dimension}"
+        self.p=7
+        self.dimension = dimension * 20
+        self.bounds = bounds
+    
+    def objective_function(self,solution):
+        obj = 0
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        obj = np.sum([val**2   for ind, val in enumerate(temp_sol)])
+        return solution, obj
+class Elliptic(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-100, 100]):
+        self.name = "Elliptic"
+        self.ID = f"Elliptic-{dimension}"
+        self.p = 7
+        self.dimension = dimension*20
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        obj = 0
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        cost = np.sum( [val**2 * pow(10,6*((ind+1)/(len(temp_sol)-1)))  for ind, val in enumerate(temp_sol)] )
+        return solution, cost
+
+class SumSquares(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-10, 10]):
+        self.name = "SumSquares"
+        self.ID = f"SumSquares-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution,np.sum( np.linspace(1, len(temp_sol),len(temp_sol) ) * np.power(temp_sol,2))
+    
+class PowellSum(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-10, 10]):
+        self.name = "PowellSum"
+        self.ID = f"PowellSum-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution,np.sum( np.abs(np.power(temp_sol,np.linspace(1, len(temp_sol),len(temp_sol) ))))
+
+class Scwefel222(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-10, 10]):
+        self.name = "Scwefel222"
+        self.ID = f"Scwefel222-{dimension}"
+
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution,np.sum( np.abs(temp_sol)) +  np.prod(np.abs(temp_sol)) 
+    
+class Scwefel226(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-500, 500]):
+        self.name = "Scwefel226"
+        self.ID = f"Scwefel226-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution,418.98*len(temp_sol) - np.sum( temp_sol * np.sin(np.sqrt( np.abs(temp_sol) )) )
+    
+class Scwefel221(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-10, 10]):
+        self.name = "Scwefel221"
+        self.ID = f"Scwefel221-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        self.p = 4
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution, np.max(np.abs(temp_sol))
+
+class Step(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-100, 100]):
+        self.name = "Step"
+        self.ID = f"Step-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution,np.sum( np.power( temp_sol + np.full(np.shape(temp_sol), 0.5), 2) )
+
+class Quartic(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-1.28, 1.28]):
+        self.name = "Quartic"
+        self.ID = f"Quartic-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution,np.sum( np.linspace(1, len(temp_sol),len(temp_sol)) * np.power( temp_sol, 4) )
+    
+class QuarticWN(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-1.28, 1.28]):
+        self.name = "QuarticWN"
+        self.ID = f"QuarticWN-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution,np.random.random() + np.sum( np.linspace(1, len(temp_sol),len(temp_sol)) * np.power( temp_sol, 4) )
+    
+class Rosenbrock(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-10, 10]):
+        self.name = "Rosenbrock"
+        self.ID = f"Rosenbrock-{dimension}"
+        self.dimension = dimension*20
+        self.p = 4
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution, np.sum( [ 100*(temp_sol[i+1] - temp_sol[i]**2)**2 + (temp_sol[i]-1)**2  for i in range(len(temp_sol)-1)] )
+
+class Rastrigin(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-5.12, 5.12]):
+        self.name = "Rastrigin"
+        self.ID = f"Rastrigin-{dimension}"
+        self.p = 3
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution,np.sum( [ i**2 - 10*np.cos(2*np.pi*i) +10   for i in temp_sol] )
+    
+class NCRastrigin(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-5.12, 5.12]):
+        self.name = "NCRastrigin"
+        self.ID = f"NCRastrigin-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def y(self, i):
+        if np.abs(i) < 0.5:
+            return i
+        return round(2*i)/2
+    
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution,np.sum( [ self.y(i)**2 - 10*np.cos(2*np.pi*self.y(i)) +10   for i in temp_sol] )
+
+class Griewank(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-600, 60]):
+        self.name = "Griewank"
+        self.ID = f"Griewank-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        return solution,1 + np.sum( [1/400* (x**2) for i,x in enumerate(temp_sol)] ) + np.prod( [np.cos(x / np.sqrt(i+1)) for i,x in enumerate(temp_sol)] )
+
+class Ackley(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-32, 32]):
+        self.name = "Ackley"
+        self.ID = f"Ackley-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        n= len(temp_sol)
+        a = (1/n)*np.sum(np.power(temp_sol,2))
+        b = (1/n)*np.sum([ np.cos(2*np.pi*i) for i in temp_sol])
+        return solution,-20*np.exp(-0.2 * np.sqrt(a ) ) -  np.exp(b) + 20 + np.e
+    
+class Penalized1(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-50, 50]):
+        self.name = "Penalized1"
+        self.ID = f"Penalized1-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def u(self,xi,a,k,m):
+        if xi>a:
+            return k*(xi-a)**m
+        if xi>=-a and xi<=a:
+            return 0
+        return k*(-xi-a)**m
+    
+    def y(self,xi):
+        return 1+0.25*(xi+1)
+    
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        a=10
+        k=100
+        m=4
+        n = len(temp_sol)
+        total_u = np.sum([self.u(temp_sol[i], a, k, m) for i in range(n)])
+        yi = [self.y(i) for i in temp_sol]
+        term = np.sum([ (yi[i]-1)**2 * (1 + 10*pow(np.sin(np.pi*yi[i+1]),2) ) for i in range(n-1) ] )
+        result=(np.pi/n)*(10*pow(np.sin(np.pi*yi[0]),2) + term + pow((yi[n-1]-1),2)) + total_u;
+        return solution,result
+    
+class Penalized2(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-50, 50]):
+        self.name = "Penalized2"
+        self.ID = f"Penalized2-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def u(self,xi,a,k,m):
+        if xi>a:
+            return k*(xi-a)**m
+        if xi>=-a and xi<=a:
+            return 0
+        return k*(-xi-a)**m
+    
+    def y(self,xi):
+        return 1+0.25*(xi+1)
+    
+    def objective_function(self, solution):
+        a=10
+        k=100
+        m=4
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        n = len(temp_sol)
+        total_u = np.sum([self.u(temp_sol[i], a, k, m) for i in range(n)])
+        term = np.sum([ (temp_sol[i]-1)**2 * (1 + pow(np.sin(3*np.pi*temp_sol[i+1]),2) ) for i in range(n-1) ] )
+        result=(np.pi/n)*(10*pow(np.sin(np.pi*temp_sol[0]),2) + term + pow((temp_sol[n-1]-1),2))*(1+pow(np.sin(np.pi*temp_sol[n-1]),2)) + total_u;
+        return solution,result
+    
+class Alpine(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-10, 10]):
+        self.name = "Alpine"
+        self.ID = f"Alpine-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+
+        return solution,np.sum( np.abs(temp_sol*np.sin(temp_sol) ) + 0.1*np.asarray(temp_sol)) 
+
+class Levy(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-10, 10]):
+        self.name = "Levy"
+        self.ID = f"Levy-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        result=0;
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+
+        n = len(temp_sol)
+        for p in range(n-1):
+            result += pow(temp_sol[p]-1,2)*(1+pow(np.sin(3*np.pi*temp_sol[p+1]),2))
+        result += (pow(np.sin(3*np.pi*temp_sol[0]),2)) + (np.abs(temp_sol[n-1])* (1+(pow(np.sin(3*np.pi*temp_sol[n-1]),2))))
+        return solution,result
+
+class Schaffer(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-10, 10]):
+        self.name = "Schaffer"
+        self.ID = f"Schaffer-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        result1=0
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+
+        n = len(temp_sol)
+        for p in range(n-1):
+             result1 += pow(temp_sol[p],2);
+        result = 0.5 + ( (pow(np.sin(np.sqrt(result1)),2)-0.5) / (pow((1+0.001*result1),2)) );
+        return solution,result
+    
+class Weierstrass(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-0.5, 0.5]):
+        self.name = "Weierstrass"
+        self.ID = f"Weierstrass-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        self.p = 0
+        
+    def objective_function(self, solution):
+
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        val=0
+        temp=0
+        result=0
+        n = len(temp_sol)
+        for p in range(n):
+            for k in range(20):
+                 val+=pow(0.5,k)*np.cos(2*np.pi*pow(3,k)*(temp_sol[p]+0.5));
+        
+        for k in range(20):
+            temp+=pow(0.5,k)*np.cos(2*np.pi*pow(3,k)*0.5);
+        
+        result=val-n*temp;
+        return solution, result;
+    
+class Himmelblau(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[-5, 5]):
+        self.name = "Himmelblau"
+        self.ID = f"Himmelblau-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        result=0
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        n = len(temp_sol)
+        for p in range(n):
+            result += (pow(temp_sol[p],4) - 16*pow(temp_sol[p],2) + 5*temp_sol[p]);
+        return solution,result/n
+    
+class Michalewicz(AbstractBaseProblem):
+    def __init__(self, dimension, bounds=[0,np.pi]):
+        self.name = "Michalewicz"
+        self.ID = f"Michalewicz-{dimension}"
+        self.dimension = dimension*self.bit_dimension
+        self.bounds = bounds
+        
+    def objective_function(self, solution):
+        result=0
+        temp_sol = self.binstrtosol(solution)
+        temp_sol = np.clip(temp_sol,self.bounds[0], self.bounds[1])
+        m=10
+        n = len(temp_sol)
+        for p in range(n):
+            result+= np.sin(temp_sol[p])*pow(np.sin(((p+1)*pow(temp_sol[p],2))/np.pi),(2*m));
+        return solution,-result

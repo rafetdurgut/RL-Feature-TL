@@ -1,15 +1,18 @@
+from cmath import inf
 import numpy as np
-
+import pandas as pd
 #Learning mode : 0 ; Starts from zero for each runtime.
 #Learning mode : 1 ; Learn from first runtime and then freeze.
 #Learning mode : 2 ; Continuously learn for all runtime.
 
 class abstractOperatorSelection:
-    def __init__(self, operator_size, reward_type, W=5, alpha=0.1, beta=0.5, Pmin=0.1, learning_mode=0):
+    def __init__(self, operator_size, reward_type, W=5, alpha=0.1, beta=0.5, Pmin=0.1, learning_mode=0, load_from_file=None):
         self.learning_mode = learning_mode
         self.operator_size = operator_size
         self.rewards = [[0] for _ in range(self.operator_size)]
+        self.rewards_history =  np.zeros((operator_size))
         self.credits = [[0] for _ in range(self.operator_size)]
+        self.credits_history = [[] for _ in range(self.operator_size)]
         self.success_counter = [[0] for _ in range(operator_size)]
         self.total_succ_counters = np.zeros((operator_size))
         self.usage_counter = [[0] for _ in range(operator_size)]
@@ -20,74 +23,125 @@ class abstractOperatorSelection:
         self.reward_type = reward_type
         self.W = W
         self.Pmin = Pmin
+        self.eps = Pmin
         self.Pmax = 1 - (self.operator_size - 1) * Pmin
         self.alpha = alpha
         self.beta = beta
-        self.operator_informations = [ [] for _ in range(operator_size)]
+        self.operator_informations = []
+        self.runtime = 0
+        self.auto_mode = False
+        self.max_period = 5
+        self.current_period = 0
+        self.mix_mode = False
+        self.feature_information = []
 
-    def restart(self):
+    def reset(self):
         self.rewards = [[0] for _ in range(self.operator_size)]
+        self.number_of_updates = [0 for i in range(self.operator_size)]
+        self.rewards_history =  np.zeros((self.operator_size))
         self.credits = [[0] for _ in range(self.operator_size)]
+        self.credits_history = [[] for _ in range(self.operator_size)]
         self.success_counter = [[0] for _ in range(self.operator_size)]
         self.total_succ_counters = np.zeros((self.operator_size))
         self.usage_counter = [[0] for _ in range(self.operator_size)]
         self.probabilities = np.zeros((self.operator_size))
         self.reward = np.zeros((self.operator_size))
         self.Pmax = 1 - (self.operator_size - 1) * self.Pmin
-        self.iteration = 0
-        
-    def set_algorithm(self, algorithm):
-        self.algorithm = algorithm
-        if isinstance(self, ClusterRL):
-            self.create_clusters()
+        print(self.algorithm.feature_size)
+        if self.load_from_file == None:
+            self.clusters = np.full((self.max_period,self.operator_size, self.algorithm.feature_size),np.inf)
+        else:
+            with open(self.load_from_file, 'r',) as f:
+                row = f.readlines()
+                
+                clusters = []
+                for r in row:
+                    r = r.replace('"',"");
+                    cl = r.split(',')
+                    for k in range(len(cl)):
+                        cc= np.fromstring(cl[k][1:-1], dtype=np.float32, sep=' ')
+                        clusters.append(cc)
+            a = clusters[-self.max_period*self.operator_size:]
+            self.clusters = np.reshape(a,(self.max_period,self.operator_size,self.algorithm.feature_size))
 
-    def get_reward(self, new_fitness, old_fitness):
-        r = (self.algorithm.problem.dimension / self.algorithm.global_best.cost) * float((new_fitness - old_fitness))
+            
+
+    def set_algorithm(self, algorithm,run_number):
+        self.iteration = 0
+        print(run_number)
+        self.operator_informations = []
+        self.timer = np.zeros((self.operator_size),dtype=int)
+        self.cluster_history = [[] for _ in range(self.operator_size)]
+        self.run_number = run_number;
+        self.algorithm = algorithm
+        if (self.learning_mode == 1 and run_number > 0):
+            self.auto_mode = True
+        else:
+            self.reset()
+        
+        
+        
+
+    def get_reward(self, candidate_cost, old_fitness):
+        if(candidate_cost==0):
+            return 0
+        r = float((  old_fitness > candidate_cost)) * (self.algorithm.global_best.cost/candidate_cost)
+        # r = float(( old_fitness > new_fitness))
+        # Add reward to rewards
+        # Update Credits ...
         if r < 0:
             r = 0
         return r
 
+    def next_period(self):
+        pass
     def next_iteration(self):
-        
-        self.update_credits()
-        
         self.iteration += 1
+        o_period = self.current_period
+        self.current_period = int(np.floor(self.iteration/(self.algorithm.max_iteration/self.max_period)))
+        self.eps = self.Pmin * np.exp(-4*self.iteration/self.algorithm.max_iteration)
+        if(o_period != self.current_period):
+            self.next_period()
+        
         for i in range(self.operator_size):
-            self.operator_informations.append([i, self.iteration, self.credits[i][-1], 
-            self.rewards[i][-1], self.usage_counter[i][-1], self.success_counter[i][-1]])
-            self.rewards[i].append(0)
+            self.credits_history[i].append(self.credits[i][-1])
+            self.operator_informations.append([i, self.run_number, self.algorithm.global_best.cost, self.iteration, self.credits_history[i][-1], 
+            self.rewards_history[i], self.usage_counter[i][-1], self.success_counter[i][-1]])
+            # self.rewards[i].append(0)
             self.usage_counter[i].append(0)
+            self.rewards_history[i] = 0
             self.success_counter[i].append(0)
 
     def add_reward(self, op_no, candidate, current):
-        self.usage_counter[op_no][self.iteration] += 1
+        self.usage_counter[op_no][-1] += 1
         reward = self.get_reward(candidate.cost, current.cost)
         if reward > 0:
-            self.success_counter[op_no][self.iteration] += 1
+
+            self.success_counter[op_no][-1] += 1
             self.total_succ_counters[op_no] += 1
-            if self.type == 'iteration':
-                self.rewards[op_no][self.iteration] += reward
+            candidate.calculate_features(self.algorithm)
+            if len(self.algorithm.features)>0:
+                op_f = [self.success_counter[op_no][-1]/self.usage_counter[op_no][-1], op_no]
+                self.feature_information.append(np.concatenate((self.algorithm.features, candidate.features,op_f)))
 
-    def apply_rewards(self):
-        for i in range(self.operator_size):
-            if self.reward_type == "insta":
-                self.reward[i] = self.rewards[i][self.iteration]
-            elif self.reward_type == "average":
-                start_pos = max(0, len(self.rewards[i]) - self.W)
-                reward = np.average(self.rewards[i][start_pos:len(self.rewards[i])])
-                self.reward[i] = reward
-            elif self.reward_type == "extreme":
-                start_pos = max(0, len(self.rewards[i]) - self.W)
-                reward = np.max(self.rewards[i][start_pos:len(self.rewards[i])])
-                self.reward[i] = reward
 
-    def update_credits(self):
-        self.apply_rewards()
-        for i in range(self.operator_size):
-            credit = (1 - self.alpha) * self.credits[i][self.iteration] + self.alpha * self.reward[i]
-            self.credits[i].append(credit)
-            
+    def apply_rewards(self, i):
+        if self.reward_type == "insta":
+            reward = self.rewards[i][self.iteration]
+        elif self.reward_type == "average":
+            start_pos = max(0, len(self.rewards[i]) - self.W)
+            reward = np.average(self.rewards[i][start_pos:len(self.rewards[i])])
+        elif self.reward_type == "extreme":
+            start_pos = max(0, len(self.rewards[i]) - self.W)
+            reward = np.max(self.rewards[i][start_pos:len(self.rewards[i])])
+        return reward
 
+    def update_credits(self,op_no,distance=0):
+        r = self.apply_rewards(op_no)
+        if(distance==inf):
+            distance =0
+        credit = (1 - self.alpha) * self.credits[op_no][-1] + self.alpha * (r+self.gama*distance)
+        self.credits[op_no].append(credit)
 
     def operator_selection(self, candidate=None):
         raise Exception("Should not call Abstract Class!")
@@ -99,74 +153,8 @@ class abstractOperatorSelection:
         return op
 
 
-class ProbabilityMatching(abstractOperatorSelection):
-    def operator_selection(self, candidate):
-        credits = [a[-1] for a in self.credits]
-        if np.all(self.total_succ_counters) == 0 or np.sum(credits) == 0:
-            for i in range(self.operator_size):
-                self.probabilities[i] = 1 / self.operator_size
-            return self.roulette_wheel()
-
-        for i in range(self.operator_size):
-            self.probabilities[i] = self.Pmin + (1 - self.operator_size * self.Pmin) * (
-                    self.credits[i][self.iteration] / np.sum(credits))
-        return self.roulette_wheel()
-
-    def __conf__(self):
-        return ['PM', self.operator_size,  self.reward_type, self.Pmin, self.W, self.alpha,self.learning_mode]
-
-
-class AdaptivePursuit(abstractOperatorSelection):
-    def operator_selection(self, candidate):
-        credits = [a[-1] for a in self.credits]
-        if np.all(self.total_succ_counters) == 0:
-            for i in range(self.operator_size):
-                self.probabilities[i] = 1 / self.operator_size
-            return self.roulette_wheel()
-
-        best_op = np.argmax(credits)
-        for i in range(self.operator_size):
-            if i == best_op:
-                self.probabilities[i] = self.probabilities[i] + self.beta * (
-                        self.Pmax - self.probabilities[i])
-            else:
-                self.probabilities[i] = self.probabilities[i] + self.beta * (
-                        self.Pmin - self.probabilities[i])
-        return self.roulette_wheel()
-
-    def __conf__(self):
-        return ['AP', self.operator_size,  self.reward_type, self.Pmin, self.W, self.alpha,self.learning_mode]
-
-import math
-
-
-class UpperConfidenceBound(abstractOperatorSelection):
-    def __init__(self, operator_size, reward_type, W=5, alpha=0.1, beta=0.1, Pmin=0.1, C=2):
-        super(UpperConfidenceBound, self).__init__(operator_size, reward_type, W, alpha, beta, Pmin)
-        self.C = C
-    def operator_selection(self, candidate):
-        credits = [a[-1] for a in self.credits]
-        if np.all(self.total_succ_counters) == 0:
-            for i in range(self.operator_size):
-                self.probabilities[i] = 1 / self.operator_size
-            return self.roulette_wheel()
-        # Burayi optimize et.
-        values = [
-            val + self.C * (math.sqrt(2 * math.log(np.sum(self.usage_counter)) / np.sum(self.usage_counter[ind][:])))
-            for
-            ind, val in enumerate(credits)]
-        best_op = np.argmax(values)
-        for i in range(self.operator_size):
-            if i == best_op:
-                self.probabilities[i] = 1 - (self.operator_size - 1) * self.Pmin
-            else:
-                self.probabilities[i] = self.Pmin
-        return self.roulette_wheel()
-    def __conf__(self):
-        return ['UCB', self.operator_size,  self.reward_type, self.Pmin, self.W, self.alpha,self.learning_mode]
-
 class ClusterRL(abstractOperatorSelection):
-    def __init__(self, operator_size, reward_type, W, alpha,  Pmin, gama = 0.3,learning_mode=0):
+    def __init__(self, operator_size, reward_type, W, alpha,  Pmin, gama = 0.3,learning_mode=0,load_from_file=None):
         super(ClusterRL, self).__init__(operator_size, reward_type, W, alpha=alpha, beta=0.1, Pmin=Pmin,learning_mode=learning_mode)
         self.operator_size = operator_size
         self.learning_mode = learning_mode
@@ -175,36 +163,36 @@ class ClusterRL(abstractOperatorSelection):
         self.gama = gama
         self.timer = np.zeros((self.operator_size),dtype=int)
         self.cluster_history = [[] for _ in range(self.operator_size)]
-        self.n_cluster_history = [[] for _ in range(self.operator_size)]
-        
-        
-    def create_clusters(self):
-        self.clusters = np.zeros((self.operator_size, self.algorithm.feature_size))
+        self.n_cluster_history = np.zeros( (self.max_period, self.operator_size) )
+        self.load_from_file=load_from_file
 
     def get_reward_bytype(self,op_no):
         if self.timer[op_no] == 0:
-            return self.rewards[op_no][self.iteration]
+            return self.rewards[op_no][-1]
         if self.reward_type == "insta":
-            return self.rewards[op_no][self.iteration]
+            return self.rewards[op_no][-1]
         elif self.reward_type == "average":
-            start_pos = max(0, self.iteration - self.W)
-            reward = np.sum(self.rewards[op_no][start_pos:self.iteration])/(self.iteration-start_pos)
+            start_pos = max(0, len(self.rewards[op_no]) - self.W)
+            reward = np.sum(self.rewards[op_no][start_pos:-1])/(self.iteration-start_pos)
             return  reward
         elif self.reward_type == "extreme":
             start_pos = max(0, len(self.rewards[op_no]) - self.W)
-            reward = np.max(self.rewards[op_no][start_pos:self.iteration])
+            reward = np.max(self.rewards[op_no][start_pos:-1])
             return reward
 
     def add_reward(self, op_no, candidate, current):
         super(ClusterRL, self).add_reward(op_no, candidate, current)
         reward = self.get_reward(candidate.cost, current.cost)
+        self.rewards_history[op_no] += reward
+        self.rewards[op_no].append(reward)
+        self.update_credits(op_no,self.distance(op_no, current))
+        # r = reward + self.gama * self.distance(op_no, current)
         if reward > 0:
             self.update_cluster(op_no, current)
-            r = reward
-            r = r + self.gama * self.distance(op_no, current)
-            self.rewards[op_no][self.iteration] += r
-            #self.rewards[op_no].append(reward)
             self.timer[op_no] += 1
+        
+        #self.rewards[op_no].append(reward)
+            
             #self.iter_rewards[op_no][self.iteration] += reward
             #self.iter_credits[op_no][self.iteration] += credit
             #self.credits[op_no].append(credit)
@@ -214,43 +202,55 @@ class ClusterRL(abstractOperatorSelection):
         
         if len(current.features) == 0:
             return
-        
-        if np.sum(self.clusters[op][:]) == 0 :
+        if np.sum(self.clusters[self.current_period][op][:]) == np.inf :
             for i in range( len(current.features) ) :
-                self.clusters[op][i] = current.features[i]
+                self.clusters[self.current_period][op][i] = current.features[i]
             return
-        
         for i in range(len(current.features) ) :
-            self.clusters[op][i] = self.clusters[op][i] + (current.features[i]-self.clusters[op][i]) / (
-                        self.timer[op] + 1)
+            self.clusters[self.current_period][op][i] = self.clusters[self.current_period][op][i] + (current.features[i]-self.clusters[self.current_period][op][i]) / (
+                        self.n_cluster_history[self.current_period][op] + 1)
+            self.n_cluster_history[self.current_period][op] += 1
         
-        self.cluster_history.append(np.concatenate(([op, self.iteration], self.clusters[op])))
+        self.cluster_history.append(np.concatenate(([op, self.iteration, self.run_number], self.clusters[self.current_period][op])))
 
     
         
     def distance(self, op, candidate):
         dist = 0
 
-        if self.iteration==0 or len(candidate.features)==0:
+        if self.iteration==0:
             return dist
+        return 0
 
-        return  (self.algorithm.problem.dimension/self.algorithm.feature_size)*np.linalg.norm(self.clusters[op] - candidate.features)
+        return  (1/len(self.algorithm.features))*np.linalg.norm(self.clusters[self.current_period][op] - candidate.features)
         
         
     def operator_selection(self, candidate):
-        if np.all(self.total_succ_counters) == 0:
+        #Epsilon-greedy
+        if np.random.rand() < self.eps or self.learning_mode == -1:
             for i in range(self.operator_size):
-                self.probabilities[i] = 1 / self.operator_size
+                self.probabilities[i] = 1
             return self.roulette_wheel()
-        values = [-1 * self.credits[ind][self.iteration] + self.gama * self.distance(ind, candidate) for ind in range(self.operator_size)]
+
+        #AOS
+        credits = [self.credits[ind][-1] for ind in range(self.operator_size)]
+        if(np.std(credits)!= 0):
+            credits = (credits - np.min(credits))/(np.max(credits)-np.min(credits))
+
+        if self.auto_mode:
+            a = np.exp(-4*self.iteration/self.algorithm.max_iteration)
+            a = -1
+            values = [-a * self.credits[ind][-1] + self.gama* self.distance(ind, candidate) for ind in range(self.operator_size)]
+        elif self.mix_mode:
+            a = np.exp(-5*self.iteration/self.algorithm.max_iteration)
+            a = -1
+            values = [-a * self.credits[ind][-1] + self.gama * self.distance(ind, candidate) for ind in range(self.operator_size)]
+        else:
+            a = np.exp(-5*self.iteration/self.algorithm.max_iteration)
+            a = -1
+            values = [-a * self.credits[ind][-1] + self.gama * self.distance(ind, candidate) for ind in range(self.operator_size)]
         best_op = np.argmin(values)
-        for i in range(self.operator_size):
-            if i == best_op:
-                self.probabilities[i] = (1 - (self.operator_size - 1) * self.Pmin)
-            else:
-                self.probabilities[i] = self.Pmin
-        op = self.roulette_wheel()
-        return op
+        return best_op
 
     def __conf__(self):
         return ['CLRL', self.operator_size,  self.reward_type, self.Pmin, self.W, self.alpha, self.gama,self.learning_mode]

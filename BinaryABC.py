@@ -2,7 +2,7 @@ import copy
 from Bee import Bee
 import numpy as np
 from itertools import accumulate
-
+from Features import Features 
 
 class BinaryABC:
     def __init__(self, problem, pop_size, maxFE, limit, operator_selector= None, operator_pool=None, log_file=None):
@@ -17,7 +17,8 @@ class BinaryABC:
         '''
         self.pop_size = pop_size
         self.problem = problem
-        self.feature_size = 6
+        self.features = []
+        self.feature_size = 7 + 11 + 1
 
         self.maxFE = maxFE
         self.operator_pool = operator_pool
@@ -33,7 +34,16 @@ class BinaryABC:
         self.log_file = log_file
         self.FE = 0
         self.landscape_features = []
-
+        
+    def reset(self):
+        self.colony = [Bee(self.problem) for _ in range(self.pop_size)]
+        # keep best Bee
+        self.global_best = Bee(self.problem)
+        self.probabilities = np.zeros(self.pop_size)
+        self.convergence = list()
+        self.iteration = 0
+        self.FE = 0
+        self.landscape_features = []
         
 
     def employed_bee(self):
@@ -80,12 +90,13 @@ class BinaryABC:
 
     def memorize(self):
         best_solution = max(self.colony, key=lambda b: b.cost)
-        if best_solution.cost > self.global_best.cost:
-
+        if best_solution.cost < self.global_best.cost and self.problem.ptype==0:
+            self.global_best = copy.deepcopy(best_solution)
+            self.convergence.append((self.iteration, best_solution.cost))
+        elif  best_solution.cost > self.global_best.cost and self.problem.ptype:
             self.global_best = copy.deepcopy(best_solution)
             self.convergence.append((self.iteration, best_solution.cost))
 
-            print(self.global_best.cost)
             
 
 
@@ -102,8 +113,8 @@ class BinaryABC:
 
     def stop_condition(self):
         # if one of the solution reach maxFE, returns true, else false
-        if hasattr(self.problem, "best") and self.global_best.cost >= self.problem.best:
-            return True
+        # if hasattr(self.problem, "best") and self.global_best.cost >= self.problem.best:
+        #     return True
         return self.iteration >= self.max_iteration
 
     def derive_func_eval_count(self):
@@ -112,41 +123,61 @@ class BinaryABC:
     def run(self):
         self.iteration = 0
         while not self.stop_condition():
+
             parents = copy.deepcopy(self.colony)
+            p_gbest = copy.deepcopy(self.global_best)
             best_solution = max(self.colony, key=lambda b: b.cost)
-            parent_std = np.std([a.cost for  a in self.colony])
-            parent_mean = np.mean([a.trial for  a in self.colony])
-            best_known = best_solution.cost
+
+            # parent_std = np.std([a.cost for  a in self.colony])
+            # parent_mean = np.mean([a.trial for  a in self.colony])
+            # best_known = best_solution.cost
+            # sum_columns = np.std([a.solution for  a in self.colony],axis=0)
+            # diff_bits = np.sum(sum_columns)/self.problem.dimension
 
             for b in self.colony:
                 b.prev_solution = b.solution.copy()
+                b.prev_cost = b.cost
                 
 
             self.employed_bee()
             self.onlooker_bee()
-    
-            new_best_solution = max(self.colony, key=lambda b: b.cost)
-            phi = new_best_solution.cost - best_known
-            
-            
+
             self.memorize()
             self.scout_bee()
+            self.features = Features(self.problem.ptype).population_features(parents,self.colony,p_gbest,self.global_best,self.pop_size,self.problem.dimension,self.limit,self.iteration)
             self.iteration += 1
-            d = np.count_nonzero(self.global_best.solution != best_solution.solution) - np.count_nonzero(self.global_best.solution != new_best_solution.solution)
-            Nstar = [ p for ind,p in enumerate(self.colony) if p.cost > parents[ind].cost]
-            epp = len(Nstar)/self.pop_size
+            # d = np.count_nonzero(self.global_best.solution != best_solution.solution) - np.count_nonzero(self.global_best.solution != new_best_solution.solution)
+            # Nstar = [ p for ind,p in enumerate(self.colony) if p.cost > parents[ind].cost]
+            # epp = len(Nstar)/self.pop_size
             
-            if len(Nstar) == 0:
-                eap = 0
-            else:
-                temp = 0
-                for p in Nstar:
-                    temp += (abs(best_known - p.cost)/self.pop_size)/parent_std
-                eap = temp/ len(Nstar)
-            print(self.global_best.cost)
-            self.landscape_features.append([phi, d, parent_std, epp*eap, parent_mean])
-            for b in self.colony:
-                b.calculate_features(self)
+            # if len(Nstar) == 0:
+            #     eap = 0
+            # else:
+            #     temp = 0
+            #     for p in Nstar:
+            #         if parent_std != 0:
+            #             temp += (abs(best_known - p.cost)/self.pop_size)/parent_std
+            #     eap = temp/ len(Nstar)
+            # self.landscape_features.append([phi, d, parent_std, epp*eap, parent_mean, diff_bits])
+            # for b in self.colony:
+            #     b.calculate_features(self)
+            #standardisation
+            # sums = [0 for i in range(self.feature_size)]
+            # features = [b.features for b in self.colony]
+            
+            # mins = np.min(features,axis=0)
+            # maxs = np.max(features,axis=0)
+
+            # for b in self.colony:
+            #     for i in range(self.feature_size):
+            #         if maxs[i] != mins[i]:
+            #             b.features[i] = (b.features[i] - mins[i])/(maxs[i]-mins[i])
+                
             self.operator_selector.next_iteration()
+            if self.iteration%100 == 0:
+                print(f"{self.iteration} iteration best:{self.global_best.cost}")
+    
+
+
             
 
