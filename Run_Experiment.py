@@ -32,7 +32,7 @@ problem= OneMax(pNo)
 abc = BinaryABC(problem, pop_size=20, maxFE=250*40, limit=100)
 # loadFileName="results/clusters-CLRL-4-extreme-0.5-25-0.5-0.3-1-False-1000.csv"
 loadFileName=None
-learning_mode = float(sys.argv[7])
+learning_mode = int(sys.argv[7])
 operator_pool = [ flipABC(),  nABC(), BABC(), ibinABC()]
 # operator_pool = [ , binABC(), ibinABC()]
 operator_selectors = ClusterRL(len(operator_pool), rewardType, W=W, alpha=alpha, gama=gama, Pmin=eps, learning_mode=learning_mode, load_from_file=loadFileName)
