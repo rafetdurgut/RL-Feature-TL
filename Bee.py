@@ -20,7 +20,8 @@ class Bee:
 
     def calculate_features(self, colony):
         #Solution Distance
-        
+        if not (colony.features):
+            return
         self.features = np.zeros((7,))
         self.features[0] = np.count_nonzero(colony.global_best.solution != self.prev_solution)/self.problem.dimension
         self.features[1] = np.count_nonzero(self.solution != self.prev_solution)/self.problem.dimension
@@ -42,6 +43,8 @@ class Bee:
         self.features[5] = np.count_nonzero(cworst.solution != self.prev_solution)/self.problem.dimension
         #Trial Distance
         self.features[6] = self.trial/colony.limit
+        self.features = np.append(self.features,colony.features)
+        self.feature_size = len(self.features)
 
     def evaluate(self):
         self.solution, self.cost = self.problem.objective_function(self.solution)

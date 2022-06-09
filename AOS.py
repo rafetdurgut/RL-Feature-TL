@@ -53,21 +53,26 @@ class abstractOperatorSelection:
         else:
             with open(self.load_from_file, 'r',) as f:
                 row = f.readlines()
-                
-                clusters = []
+                clusters=[]
                 for r in row:
-                    r = r.replace('"',"");
-                    cl = r.split(',')
-                    for k in range(len(cl)):
-                        cc= np.fromstring(cl[k][1:-1], dtype=np.float32, sep=' ')
-                        clusters.append(cc)
-            a = clusters[-self.max_period*self.operator_size:]
-            self.clusters = np.reshape(a,(self.max_period,self.operator_size,self.algorithm.feature_size))
+                    clusters.append( np.fromstring(r, dtype=np.float32, sep=',') )
+                clusters = clusters[-self.max_period*self.operator_size:]
+                # row = f.readlines()
+                # clusters = []
+                # for r in row:
+                #     r = r.replace('"',"");
+                #     cl = r.split(',')
+                #     for k in range(len(cl)):
+                #         cc= np.fromstring(cl[k][1:-1], dtype=np.float32, sep=' ')
+                #         clusters.append(cc)
+            # a = clusters[-self.max_period*self.operator_size:]
+            self.clusters = np.reshape(clusters,(self.max_period,self.operator_size,self.algorithm.feature_size))
 
             
 
     def set_algorithm(self, algorithm,run_number):
         self.iteration = 0
+        self.current_period = 0
         print(run_number)
         self.operator_informations = []
         self.timer = np.zeros((self.operator_size),dtype=int)
@@ -85,7 +90,7 @@ class abstractOperatorSelection:
     def get_reward(self, candidate_cost, old_fitness):
         if(candidate_cost==0):
             return 0
-        r = float((  old_fitness > candidate_cost)) * (self.algorithm.global_best.cost/candidate_cost)
+        r = float((  candidate_cost > old_fitness)) * (self.algorithm.global_best.cost/candidate_cost)
         # r = float(( old_fitness > new_fitness))
         # Add reward to rewards
         # Update Credits ...
@@ -120,9 +125,9 @@ class abstractOperatorSelection:
             self.success_counter[op_no][-1] += 1
             self.total_succ_counters[op_no] += 1
             candidate.calculate_features(self.algorithm)
-            if len(self.algorithm.features)>0:
-                op_f = [self.success_counter[op_no][-1]/self.usage_counter[op_no][-1], op_no]
-                self.feature_information.append(np.concatenate((self.algorithm.features, candidate.features,op_f)))
+            # if len(self.algorithm.features)>0:
+            #     op_f = [self.success_counter[op_no][-1]/self.usage_counter[op_no][-1], op_no]
+            #     self.feature_information.append(np.concatenate((self.algorithm.features, candidate.features,op_f)))
 
 
     def apply_rewards(self, i):
@@ -179,7 +184,24 @@ class ClusterRL(abstractOperatorSelection):
             start_pos = max(0, len(self.rewards[op_no]) - self.W)
             reward = np.max(self.rewards[op_no][start_pos:-1])
             return reward
+    def update_cluster(self, op, current):
+            
+            if len(current.features) == 0:
+                return
 
+            if np.sum(self.clusters[self.current_period][op][:]) == np.inf :
+                for i in range( len(current.features) ) :
+                    self.clusters[self.current_period][op][i] = current.features[i]
+                return
+            for i in range(len(current.features) ) :
+                self.clusters[self.current_period][op][i] = self.clusters[self.current_period][op][i] + (current.features[i]-self.clusters[self.current_period][op][i]) / (
+                            self.n_cluster_history[self.current_period][op] + 1)
+                self.n_cluster_history[self.current_period][op] += 1
+            
+            self.cluster_history.append(np.concatenate(([op, self.iteration, self.run_number], self.clusters[self.current_period][op])))
+
+        
+            
     def add_reward(self, op_no, candidate, current):
         super(ClusterRL, self).add_reward(op_no, candidate, current)
         reward = self.get_reward(candidate.cost, current.cost)
@@ -188,7 +210,7 @@ class ClusterRL(abstractOperatorSelection):
         self.update_credits(op_no,self.distance(op_no, current))
         # r = reward + self.gama * self.distance(op_no, current)
         if reward > 0:
-            self.update_cluster(op_no, current)
+            self.update_cluster(op_no, candidate)
             self.timer[op_no] += 1
         
         #self.rewards[op_no].append(reward)
@@ -198,31 +220,14 @@ class ClusterRL(abstractOperatorSelection):
             #self.credits[op_no].append(credit)
             #self.iter_rewards[op_no][self.iteration] += r + self.gama * self.hamming_distance(self.clusters[op_no], candidate.solution)
 
-    def update_cluster(self, op, current):
-        
-        if len(current.features) == 0:
-            return
-        if np.sum(self.clusters[self.current_period][op][:]) == np.inf :
-            for i in range( len(current.features) ) :
-                self.clusters[self.current_period][op][i] = current.features[i]
-            return
-        for i in range(len(current.features) ) :
-            self.clusters[self.current_period][op][i] = self.clusters[self.current_period][op][i] + (current.features[i]-self.clusters[self.current_period][op][i]) / (
-                        self.n_cluster_history[self.current_period][op] + 1)
-            self.n_cluster_history[self.current_period][op] += 1
-        
-        self.cluster_history.append(np.concatenate(([op, self.iteration, self.run_number], self.clusters[self.current_period][op])))
-
     
-        
     def distance(self, op, candidate):
         dist = 0
 
-        if self.iteration==0:
+        if self.iteration==0 or len(candidate.features)==0:
             return dist
-        return 0
-
-        return  (1/len(self.algorithm.features))*np.linalg.norm(self.clusters[self.current_period][op] - candidate.features)
+        dist += (1/self.algorithm.feature_size)*np.linalg.norm(self.clusters[self.current_period][op] - candidate.features)
+        return  dist
         
         
     def operator_selection(self, candidate):
@@ -239,19 +244,19 @@ class ClusterRL(abstractOperatorSelection):
 
         if self.auto_mode:
             a = np.exp(-4*self.iteration/self.algorithm.max_iteration)
-            a = -1
-            values = [-a * self.credits[ind][-1] + self.gama* self.distance(ind, candidate) for ind in range(self.operator_size)]
+            a = -1 * a
+            values = [a * self.credits[ind][-1] + self.gama* self.distance(ind, candidate) for ind in range(self.operator_size)]
         elif self.mix_mode:
             a = np.exp(-5*self.iteration/self.algorithm.max_iteration)
             a = -1
-            values = [-a * self.credits[ind][-1] + self.gama * self.distance(ind, candidate) for ind in range(self.operator_size)]
+            values = [a * self.credits[ind][-1] + self.gama * self.distance(ind, candidate) for ind in range(self.operator_size)]
         else:
             a = np.exp(-5*self.iteration/self.algorithm.max_iteration)
             a = -1
-            values = [-a * self.credits[ind][-1] + self.gama * self.distance(ind, candidate) for ind in range(self.operator_size)]
+            values = [a * self.credits[ind][-1] + self.gama * self.distance(ind, candidate) for ind in range(self.operator_size)]
         best_op = np.argmin(values)
         return best_op
 
     def __conf__(self):
-        return ['CLRL', self.operator_size,  self.reward_type, self.Pmin, self.W, self.alpha, self.gama,self.learning_mode]
+        return ['CLRL', self.operator_size,  self.reward_type, self.Pmin, self.W, self.alpha, self.gama,self.learning_mode,self.load_from_file!=None]
 

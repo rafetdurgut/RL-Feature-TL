@@ -33,10 +33,7 @@ class Features:
         pic = len(imp_childs)/n
         #Population new best childs
         pnb = len(best_childs)/n
-        #Population amount of improvement
-        
-        #Population Convergence Velocity
-        #Ptype == 0 means minimization
+
         if self.ptype == 0:
             pai = 0
             if len(imp_childs)>0:
@@ -68,13 +65,10 @@ class Features:
         features.append(psd)
         features.append(pfd)
         features.append(pic)
-        # features.append(pwc)
-        # features.append(pec)
         features.append(pnb)
         features.append(abs(pai))
         features.append(pcv)
         features.append(pcr)
-        print(pcr)
         features.append(eap)
         features.append(eap*pic)
         features.append(atn)

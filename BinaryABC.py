@@ -18,7 +18,7 @@ class BinaryABC:
         self.pop_size = pop_size
         self.problem = problem
         self.features = []
-        self.feature_size = 7 + 11 + 1
+        self.feature_size = 19
 
         self.maxFE = maxFE
         self.operator_pool = operator_pool
@@ -146,35 +146,8 @@ class BinaryABC:
             self.scout_bee()
             self.features = Features(self.problem.ptype).population_features(parents,self.colony,p_gbest,self.global_best,self.pop_size,self.problem.dimension,self.limit,self.iteration)
             self.iteration += 1
-            # d = np.count_nonzero(self.global_best.solution != best_solution.solution) - np.count_nonzero(self.global_best.solution != new_best_solution.solution)
-            # Nstar = [ p for ind,p in enumerate(self.colony) if p.cost > parents[ind].cost]
-            # epp = len(Nstar)/self.pop_size
-            
-            # if len(Nstar) == 0:
-            #     eap = 0
-            # else:
-            #     temp = 0
-            #     for p in Nstar:
-            #         if parent_std != 0:
-            #             temp += (abs(best_known - p.cost)/self.pop_size)/parent_std
-            #     eap = temp/ len(Nstar)
-            # self.landscape_features.append([phi, d, parent_std, epp*eap, parent_mean, diff_bits])
-            # for b in self.colony:
-            #     b.calculate_features(self)
-            #standardisation
-            # sums = [0 for i in range(self.feature_size)]
-            # features = [b.features for b in self.colony]
-            
-            # mins = np.min(features,axis=0)
-            # maxs = np.max(features,axis=0)
-
-            # for b in self.colony:
-            #     for i in range(self.feature_size):
-            #         if maxs[i] != mins[i]:
-            #             b.features[i] = (b.features[i] - mins[i])/(maxs[i]-mins[i])
-                
             self.operator_selector.next_iteration()
-            if self.iteration%100 == 0:
+            if self.iteration%10 == 0:
                 print(f"{self.iteration} iteration best:{self.global_best.cost}")
     
 

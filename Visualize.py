@@ -4,14 +4,14 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from Problem  import *
 from Operators import *
-show_features = True
+show_features = False
 show_datas = True
 show_convergences = False 
 eps = 0.5
 alpha = 0.5
 gama = 0.3
 pNo = 15
-max_run=1
+max_run=5
 w = 25
 
 reward = 'extreme'
@@ -20,9 +20,9 @@ prob = OneMax(1000)
 pName = prob.ID
 # pName='500'
 o="CLRL"
-learning = -1
+learning = 1
 operator_pool = [ disABC(),  nABC(), bitABC(), ibinABC()]
-# operator_pool = [ disABC(), binABC(), ibinABC()]
+operator_pool = [ flipABC(),  nABC(), BABC(), ibinABC()]
 operator_size = len(operator_pool)
 
 # operator_pool = [ disABC(),  binABC(), ibinABC()]
@@ -31,7 +31,9 @@ if show_features:
     sns.set_theme(palette="tab10")
     # Visualize Cluster Centers
     file_path = f"results/cluster_history-{o}-{operator_size}-{reward}-{eps}-{w}-{alpha}-{gama}-{learning}-{pName}.csv"
-    columns = ["op_no","iteration","run","f0","f1","f2","f3","f4","f5"]  
+    columns = ["op_no","iteration","run"]
+    for i in range(19):
+        columns.append(f"f{i}")
     df = pd.read_csv(file_path, header=None,names=columns)
     for r in range(max_run):
         temp_df = df[df["run"]==r]
