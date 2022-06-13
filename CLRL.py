@@ -92,7 +92,7 @@ class CLRL:
     def get_reward(self, new_cost, old_cost):
         if(new_cost==0):
             return 0
-        r = float(( new_cost - old_cost)) * (self.algorithm.global_best.cost/new_cost)
+        r = float(( new_cost > old_cost)) * (self.algorithm.global_best.cost/new_cost)
         return max(0,r)
 
 
