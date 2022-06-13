@@ -36,14 +36,19 @@ class Experiment:
 
     def Run(self):
         self.times = []
+        self.mean = []
         for run in range(self.runs):
             start_time = time.time()
             self.operator_selector.set_algorithm(self.optimizer,run)
             self.optimizer.run()
             self.times.append( time.time() - start_time) 
+            self.mean.append(self.optimizer.global_best.cost)
             self.algorithm_logger.log()
             self.aos_logger.log()
             self.optimizer.reset()
+        print("--------------------------------")
+        print(f" mean : {np.mean(self.mean)}")
+        print("--------------------------------")
             
 
             

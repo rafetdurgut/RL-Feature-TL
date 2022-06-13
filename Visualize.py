@@ -4,23 +4,22 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from Problem  import *
 from Operators import *
-show_features = False
+show_features = True
 show_datas = True
 show_convergences = False 
-eps = 0.5
+eps = 0.3
 alpha = 0.5
-gama = 0.3
+gama = 0.5
 pNo = 15
-max_run=5
+max_run=4
 w = 25
-
-reward = 'extreme'
-# prob= SetUnionKnapsack('Data/SUKP',pNo)
-prob = OneMax(1000)
-pName = prob.ID
-# pName='500'
-o="CLRL"
 learning = 1
+reward = 'average'
+# prob= SetUnionKnapsack('Data/SUKP',pNo)
+prob = OneMax(750)
+pName = prob.ID
+pName='1000'
+o="CLRL"
 operator_pool = [ disABC(),  nABC(), bitABC(), ibinABC()]
 operator_pool = [ flipABC(),  nABC(), BABC(), ibinABC()]
 operator_size = len(operator_pool)
@@ -30,7 +29,7 @@ operator_size = len(operator_pool)
 if show_features:
     sns.set_theme(palette="tab10")
     # Visualize Cluster Centers
-    file_path = f"results/cluster_history-{o}-{operator_size}-{reward}-{eps}-{w}-{alpha}-{gama}-{learning}-{pName}.csv"
+    file_path = f"results/cluster_history-{o}-{operator_size}-{reward}-{eps}-{w}-{alpha}-{gama}-{learning}-False-{pName}.csv"
     columns = ["op_no","iteration","run"]
     for i in range(19):
         columns.append(f"f{i}")
@@ -49,7 +48,7 @@ if show_features:
 
 if show_datas:
     #Visualize Operator Informations
-    file_path = f"results/operator_informations-{o}-{operator_size}-{reward}-{eps}-{w}-{alpha}-{gama}-{learning}-{pName}.csv"
+    file_path = f"results/operator_informations-{o}-{operator_size}-{reward}-{eps}-{w}-{alpha}-{gama}-{learning}-False-{pName}.csv"
     columns = ["op_no","run","cg","iteration","credits","rewards","usages","success"]  
     df = pd.read_csv(file_path, header=None,names=columns)
     for r in range(max_run):

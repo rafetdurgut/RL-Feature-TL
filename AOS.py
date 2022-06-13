@@ -121,7 +121,6 @@ class abstractOperatorSelection:
         self.usage_counter[op_no][-1] += 1
         reward = self.get_reward(candidate.cost, current.cost)
         if reward > 0:
-
             self.success_counter[op_no][-1] += 1
             self.total_succ_counters[op_no] += 1
             candidate.calculate_features(self.algorithm)
@@ -171,34 +170,21 @@ class ClusterRL(abstractOperatorSelection):
         self.n_cluster_history = np.zeros( (self.max_period, self.operator_size) )
         self.load_from_file=load_from_file
 
-    def get_reward_bytype(self,op_no):
-        if self.timer[op_no] == 0:
-            return self.rewards[op_no][-1]
-        if self.reward_type == "insta":
-            return self.rewards[op_no][-1]
-        elif self.reward_type == "average":
-            start_pos = max(0, len(self.rewards[op_no]) - self.W)
-            reward = np.sum(self.rewards[op_no][start_pos:-1])/(self.iteration-start_pos)
-            return  reward
-        elif self.reward_type == "extreme":
-            start_pos = max(0, len(self.rewards[op_no]) - self.W)
-            reward = np.max(self.rewards[op_no][start_pos:-1])
-            return reward
-    def update_cluster(self, op, current):
-            
-            if len(current.features) == 0:
-                return
 
-            if np.sum(self.clusters[self.current_period][op][:]) == np.inf :
-                for i in range( len(current.features) ) :
-                    self.clusters[self.current_period][op][i] = current.features[i]
-                return
-            for i in range(len(current.features) ) :
-                self.clusters[self.current_period][op][i] = self.clusters[self.current_period][op][i] + (current.features[i]-self.clusters[self.current_period][op][i]) / (
-                            self.n_cluster_history[self.current_period][op] + 1)
-                self.n_cluster_history[self.current_period][op] += 1
-            
-            self.cluster_history.append(np.concatenate(([op, self.iteration, self.run_number], self.clusters[self.current_period][op])))
+    def update_cluster(self, op, current):
+        if len(current.features) == 0:
+            return
+
+        if np.sum(self.clusters[self.current_period][op][:]) == np.inf :
+            for i in range( len(current.features) ) :
+                self.clusters[self.current_period][op][i] = current.features[i]
+            return
+        for i in range(len(current.features) ) :
+            self.clusters[self.current_period][op][i] = self.clusters[self.current_period][op][i] + (current.features[i]-self.clusters[self.current_period][op][i]) / (
+                        self.n_cluster_history[self.current_period][op] + 1)
+            self.n_cluster_history[self.current_period][op] += 1
+        
+        self.cluster_history.append([op, self.iteration, self.run_number, self.clusters[self.current_period][op]])
 
         
             
@@ -223,7 +209,6 @@ class ClusterRL(abstractOperatorSelection):
     
     def distance(self, op, candidate):
         dist = 0
-
         if self.iteration==0 or len(candidate.features)==0:
             return dist
         dist += (1/self.algorithm.feature_size)*np.linalg.norm(self.clusters[self.current_period][op] - candidate.features)

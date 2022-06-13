@@ -97,10 +97,6 @@ class BinaryABC:
             self.global_best = copy.deepcopy(best_solution)
             self.convergence.append((self.iteration, best_solution.cost))
 
-            
-
-
-
     def calculate_cdf(self):
         #CDF
         sum_fitness = sum([x.fitness for x in self.colony])
@@ -123,16 +119,8 @@ class BinaryABC:
     def run(self):
         self.iteration = 0
         while not self.stop_condition():
-
             parents = copy.deepcopy(self.colony)
             p_gbest = copy.deepcopy(self.global_best)
-            best_solution = max(self.colony, key=lambda b: b.cost)
-
-            # parent_std = np.std([a.cost for  a in self.colony])
-            # parent_mean = np.mean([a.trial for  a in self.colony])
-            # best_known = best_solution.cost
-            # sum_columns = np.std([a.solution for  a in self.colony],axis=0)
-            # diff_bits = np.sum(sum_columns)/self.problem.dimension
 
             for b in self.colony:
                 b.prev_solution = b.solution.copy()
@@ -147,8 +135,7 @@ class BinaryABC:
             self.features = Features(self.problem.ptype).population_features(parents,self.colony,p_gbest,self.global_best,self.pop_size,self.problem.dimension,self.limit,self.iteration)
             self.iteration += 1
             self.operator_selector.next_iteration()
-            if self.iteration%10 == 0:
-                print(f"{self.iteration} iteration best:{self.global_best.cost}")
+        print(f"{self.iteration} iteration best:{self.global_best.cost}")
     
 
 
