@@ -17,7 +17,7 @@ W = int(sys.argv[3])
 eps = float(sys.argv[4])
 alpha = float(sys.argv[5])
 gama = float(sys.argv[6])
-
+learning_mode = int(sys.argv[7])
 # rewardType = "average"
 # W = 25
 # eps = 0.3
@@ -32,7 +32,7 @@ problem= OneMax(pNo)
 abc = BinaryABC(problem, pop_size=20, maxFE=250*40, limit=100)
 # loadFileName="results/clusters-CLRL-4-extreme-0.5-25-0.5-0.3-0-False-1000.csv"
 loadFileName=None
-learning_mode = 0
+# learning_mode = 0
 operator_pool = [ flipABC(),  nABC(), BABC(), ibinABC()]
 # operator_pool = [ , binABC(), ibinABC()]
 parameters = {'operator_size': len(operator_pool), 'reward_type': rewardType, 'W':W, 'alpha':alpha, 'gama':gama, 'eps':eps, 'learning_mode':learning_mode, 'load_file':loadFileName}
