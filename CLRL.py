@@ -8,6 +8,7 @@ class Operator:
         self.success = [0]
         self.total_success = 0
         self.trial = [0]
+        self.cluster_update_count = 1
         self.reset()
 
     def next_iteration(self):
@@ -35,7 +36,7 @@ class CLRL:
     def __init__(self, parameters):
         #General informations
         self.parameters = parameters
-        self.parameters["max_period"] = 5
+        self.parameters["max_period"] = 10
         self.informations = dict({'iteration_number':0, 'period_number':0})
         self.cluster_history = []
         self.credit_history = []
@@ -81,12 +82,7 @@ class CLRL:
         self.informations["run_number"] = run_number
         self.informations['iteration_number'] = 0
         self.informations['period_number'] = 0
-        print(f"{self.informations['run_number']}. run {self.informations['period_number']} period is starting... iteration: {self.informations['iteration_number']}")
         self.start()
-        for p in self.periods:
-            for o in p.op:
-                print(o.credits[-1],end=",")
-            print("")
 
     #Calculate reward according to candidate and current solution    
     def get_reward(self, new_cost, old_cost):
@@ -94,7 +90,6 @@ class CLRL:
             return 0
         r = float(( new_cost > old_cost)) * (self.algorithm.global_best.cost/new_cost)
         return max(0,r)
-
 
     #Operator used and supply feedback
     def add_reward(self, op, candidate, current):
@@ -154,9 +149,8 @@ class CLRL:
             self.operator_informations.append([i, self.informations["run_number"], self.algorithm.global_best.cost, self.informations["iteration_number"], self.periods[self.informations["period_number"]].op[i].credits[-1], 
             self.periods[self.informations["period_number"]].op[i].reward_history[-1], self.periods[self.informations["period_number"]].op[i].trial[-1], self.periods[self.informations["period_number"]].op[i].success[-1]])
             self.credit_history.append([i, self.informations["iteration_number"], self.informations["run_number"], self.periods[self.informations["period_number"]].op[i].credits[-1]])
-            self.cluster_history.append([i, self.informations["iteration_number"], self.informations["run_number"], self.periods[self.informations["period_number"]].op[i].clusters])
+            self.cluster_history.append(np.concatenate( (np.array([i, self.informations["iteration_number"], self.informations["run_number"]]), self.periods[self.informations["period_number"]].op[i].clusters),axis=0))
             self.periods[self.informations["period_number"]].op[i].next_iteration()
-
         self.informations["iteration_number"] += 1
 
     def get_distance(self, op, y):
@@ -173,11 +167,10 @@ class CLRL:
         if np.sum(self.periods[self.informations["period_number"]].op[op].clusters) == np.inf :
             self.periods[self.informations["period_number"]].op[op].clusters = np.array(solution.features)
             return
-
         for i in range(len(solution.features) ) :
-            self.periods[self.informations["period_number"]].op[op].clusters[i] = self.periods[self.informations["period_number"]].op[op].clusters[i] 
-            + ((solution.features[i]-self.periods[self.informations["period_number"]].op[op].clusters[i]) / self.periods[self.informations["period_number"]].op[op].total_success)
-
+            self.periods[self.informations["period_number"]].op[op].clusters[i] = self.periods[self.informations["period_number"]].op[op].clusters[i] + ((solution.features[i]-self.periods[self.informations["period_number"]].op[op].clusters[i]) / (self.periods[self.informations["period_number"]].op[op].cluster_update_count + 1))
+        self.periods[self.informations["period_number"]].op[op].cluster_update_count += 1
+        
 
     def operator_selection(self, candidate):
         #Epsilon-greedy random selection

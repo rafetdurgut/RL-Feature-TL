@@ -11,20 +11,14 @@ from Operators import *
 from BinaryABC import BinaryABC
 from CLRL import CLRL
 
-pNo = int(sys.argv[1])
-rewardType = sys.argv[2]
-W = int(sys.argv[3])
-eps = float(sys.argv[4])
-alpha = float(sys.argv[5])
-gama = float(sys.argv[6])
-learning_mode = int(sys.argv[7])
-# rewardType = "average"
-# W = 25
-# eps = 0.3
-# alpha = 0.3
-# gama = 0.9
-# pNo = 4500
 
+rewardType = "average"
+W = 25
+eps = 0.4
+alpha = 0.5
+gama = 0.3
+pNo = 1000
+learning_mode = 0
 # problem= SetUnionKnapsack('Data/SUKP',pNo)
 # abc = BinaryABC(problem, pop_size=20, maxFE=40*max(problem.m, problem.n), limit=100)
 
