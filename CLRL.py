@@ -36,7 +36,7 @@ class CLRL:
     def __init__(self, parameters):
         #General informations
         self.parameters = parameters
-        self.parameters["max_period"] = 5
+        self.parameters["max_period"] = 10
         self.informations = dict({'iteration_number':0, 'period_number':0})
         self.cluster_history = []
         self.credit_history = []
@@ -46,7 +46,7 @@ class CLRL:
         if self.parameters["load_file"] == None:
             clusters = np.full((self.parameters["max_period"],self.parameters["operator_size"], self.algorithm.feature_size),np.inf)
         else:
-            with open(self.load_from_file, 'r',) as f:
+            with open(self.parameters["load_file"], 'r',) as f:
                 row = f.readlines()
                 clusters=[]
                 for r in row:
@@ -72,9 +72,12 @@ class CLRL:
                 self.reset()
         else:
             self.reset()
-
+        self.clusters = []
         for p in self.periods:
+            for o in p.op:
+                self.clusters.append(o.clusters)
             p.reset()
+        
     
     def set_algorithm(self,algorithm, run_number):
         #Assign algorithm and run number and start...
@@ -184,6 +187,8 @@ class CLRL:
                 return np.random.randint(0, self.parameters["operator_size"])
         
         if(np.std(credits)!= 0):
+            credits = (credits - np.min(credits))/(np.max(credits)-np.min(credits))
+        else:
             return np.random.randint(0, self.parameters["operator_size"])
         
         values = [(-1* credits[ind] + self.parameters["gama"] * self.get_distance(ind, candidate)) for ind in range(self.parameters["operator_size"])]
