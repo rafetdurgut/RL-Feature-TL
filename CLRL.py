@@ -36,7 +36,7 @@ class CLRL:
     def __init__(self, parameters):
         #General informations
         self.parameters = parameters
-        self.parameters["max_period"] = 10
+        self.parameters["max_period"] = 5
         self.informations = dict({'iteration_number':0, 'period_number':0})
         self.cluster_history = []
         self.credit_history = []
@@ -184,7 +184,7 @@ class CLRL:
                 return np.random.randint(0, self.parameters["operator_size"])
         
         if(np.std(credits)!= 0):
-            credits = (credits - np.min(credits))/(np.max(credits)-np.min(credits))
+            return np.random.randint(0, self.parameters["operator_size"])
         
         values = [(-1* credits[ind] + self.parameters["gama"] * self.get_distance(ind, candidate)) for ind in range(self.parameters["operator_size"])]
         best_op = np.argmin(values)
