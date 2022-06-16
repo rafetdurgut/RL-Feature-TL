@@ -29,7 +29,7 @@ operator_pool = [ flipABC(),  nABC(), BABC(), ibinABC()]
 parameters = {'operator_size': len(operator_pool), 'reward_type': rewardType, 'W':W, 'alpha':alpha, 'gama':gama, 'eps':eps, 'learning_mode':learning_mode, 'load_file':loadFileName}
 operator_selectors = CLRL(parameters)
 alg_outs = ["convergence"]
-aos_outs = ["cluster_history","operator_informations","clusters","credits","cluster_update_counts"]
+aos_outs = ["operator_informations","clusters","credits","cluster_update_counts"]
 exp = Experiment(abc,operator_pool,operator_selectors,
 problem,algortihm_outs=alg_outs, aos_outs=aos_outs, runs=30, clear_history=True)
 exp.Run()

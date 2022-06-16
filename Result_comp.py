@@ -73,15 +73,15 @@ for pno in np.arange(500,5000,250):
     
     # problem=SetUnionKnapsack('Data/SUKP',pno)
     problem = OneMax(pno)
-    learned = False
+    learned = True
     filenames.append(problem.dosyaAdi)
     
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-{learned}-{problem.dosyaAdi}.csv"
-    data =get_best_data(file_name, 3)
-    data_random.append(data)
-    data_random_max.append(np.max(data))
-    data_random_mean.append(np.mean(data))
-    data_random_std.append(np.std(data))
+    # file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-{learned}-{problem.dosyaAdi}.csv"
+    # data =get_best_data(file_name, 3)
+    # data_random.append(data)
+    # data_random_max.append(np.max(data))
+    # data_random_mean.append(np.mean(data))
+    # data_random_std.append(np.std(data))
     
     file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{learned}-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
@@ -98,7 +98,7 @@ for pno in np.arange(500,5000,250):
     data_CRL_std.append(np.std(data))
 
     if data_CRL_mean[ind] != data_RL_mean[ind]:
-        w,p = wilcoxon(data_random[ind],data_RL[ind])
+        w,p = wilcoxon(data_RL[ind],data_CRL[ind])
         ss.append(p)
     else:
         ss.append(1)
@@ -108,7 +108,7 @@ ps = []
 # print([data_random_max,data_random_mean , data_random_std])
 # print([data_RL_max,data_RL_mean , data_RL_std])
 # print([data_CRL_max, data_CRL_mean , data_CRL_std])
-print(data_random_mean)
+# print(data_random_mean)
 print(data_RL_mean)
 print(data_CRL_mean)
 print(data_CRL_max)
