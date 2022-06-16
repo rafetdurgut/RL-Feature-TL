@@ -91,9 +91,6 @@ class CLRL:
         else:
             self.reset()
 
-        for p in self.periods:
-            p.reset()
-
     def finished(self):
         self.clusters = []
         self.credits = []
@@ -118,7 +115,7 @@ class CLRL:
     def get_reward(self, new_cost, old_cost):
         if(new_cost==0):
             return 0
-        r = float(( new_cost > old_cost)) * (self.algorithm.global_best.cost/new_cost)
+        r = float(( new_cost - old_cost)) * (self.algorithm.global_best.cost/new_cost)
         return max(0,r)
 
     #Operator used and supply feedback
@@ -213,12 +210,11 @@ class CLRL:
             if credits[i] == -inf:
                 return np.random.randint(0, self.parameters["operator_size"])
         
-        # if(np.std(credits)!= 0):
-        #     credits = (credits - np.min(credits))/(np.max(credits)-np.min(credits))
-        # else:
-        #     return np.random.randint(0, self.parameters["operator_size"])
-        if(np.std(credits) == 0):
+        if(np.std(credits)!= 0):
+            credits = (credits - np.min(credits))/(np.max(credits)-np.min(credits))
+        else:
             return np.random.randint(0, self.parameters["operator_size"])
+        
 
         
         # for i in range(len(credits)):

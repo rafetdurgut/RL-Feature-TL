@@ -35,16 +35,6 @@ class BinaryABC:
         self.FE = 0
         self.landscape_features = []
         
-    def reset(self):
-        self.colony = [Bee(self.problem) for _ in range(self.pop_size)]
-        # keep best Bee
-        self.global_best = Bee(self.problem)
-        self.probabilities = np.zeros(self.pop_size)
-        self.convergence = list()
-        self.iteration = 0
-        self.FE = 0
-        self.landscape_features = []
-        
 
     def employed_bee(self):
         self.calculate_cdf()
@@ -115,6 +105,12 @@ class BinaryABC:
 
     def derive_func_eval_count(self):
         return self.iteration * self.operator.costFE()
+    def reset(self):
+        self.colony = [Bee(self.problem) for _ in range(self.pop_size)]
+        # keep best Bee
+        self.global_best = Bee(self.problem)
+        self.probabilities = np.zeros(self.pop_size)
+        self.convergence = list()
 
     def run(self):
         self.iteration = 0

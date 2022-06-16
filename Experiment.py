@@ -46,7 +46,6 @@ class Experiment:
             self.operator_selector.finished()
             self.algorithm_logger.log()
             self.aos_logger.log()
-        
             self.optimizer.reset()
         print("--------------------------------")
         print(f" mean : {np.mean(self.mean)}")

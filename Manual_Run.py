@@ -16,16 +16,16 @@ rewardType = "average"
 W = 25
 eps = 0.4
 alpha = 0.5
-gama = 0.3
-pNo = 5000
+gama = 0.9
+pNo = 1000
 learning_mode = 1
 # problem= SetUnionKnapsack('Data/SUKP',pNo)
 # abc = BinaryABC(problem, pop_size=20, maxFE=40*max(problem.m, problem.n), limit=100)
 
 problem= OneMax(pNo)
 abc = BinaryABC(problem, pop_size=20, maxFE=250*40, limit=100)
-loadFileName="CLRL-4-average-0.4-25-0.5-0.3-1-False-1000.csv"
-# loadFileName=None
+# loadFileName="CLRL-4-average-0.4-25-0.5-0.3-1-False-1000.csv"
+loadFileName=None
 # learning_mode = 0
 operator_pool = [ flipABC(),  nABC(), BABC(), ibinABC()]
 parameters = {'operator_size': len(operator_pool), 'reward_type': rewardType, 'W':W, 'alpha':alpha, 'gama':gama, 'eps':eps, 'learning_mode':learning_mode, 'load_file':loadFileName}
