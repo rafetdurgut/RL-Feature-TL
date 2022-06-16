@@ -4,7 +4,7 @@ import pandas as pd
 
 class Operator:
     def __init__(self):
-        self.credits = [-inf]
+        
         self.success = [0]
         self.total_success = 0
         self.trial = [0]
@@ -36,7 +36,7 @@ class CLRL:
     def __init__(self, parameters):
         #General informations
         self.parameters = parameters
-        self.parameters["max_period"] = 10
+        self.parameters["max_period"] = 5
         self.informations = dict({'iteration_number':0, 'period_number':0})
         self.cluster_history = []
         self.credit_history = []
@@ -45,18 +45,36 @@ class CLRL:
         self.periods = [Period(self.parameters["operator_size"]) for _ in range(self.parameters["max_period"])]
         if self.parameters["load_file"] == None:
             clusters = np.full((self.parameters["max_period"],self.parameters["operator_size"], self.algorithm.feature_size),np.inf)
+            credits = np.full((self.parameters["max_period"],self.parameters["operator_size"]),-inf)
+            cluster_update_count = np.full((self.parameters["max_period"],self.parameters["operator_size"]),1)
         else:
-            with open(self.parameters["load_file"], 'r',) as f:
+            with open(f"results/clusters-{self.parameters['load_file']}", 'r',) as f:
                 row = f.readlines()
                 clusters=[]
                 for r in row:
                     clusters.append( np.fromstring(r, dtype=np.float32, sep=',') )
                 clusters = clusters[-self.parameters["max_period"]*self.parameters["operator_size"]:]
+            with open(f"results/credits-{self.parameters['load_file']}", 'r',) as f:
+                row = f.readlines()
+                credits=[]
+                for r in row:
+                    credits.append( np.fromstring(r, dtype=np.float32, sep=',') )
+                credits = credits[-1]
+            with open(f"results/cluster_update_counts-{self.parameters['load_file']}", 'r',) as f:
+                row = f.readlines()
+                cluster_update_count=[]
+                for r in row:
+                    cluster_update_count.append( np.fromstring(r, dtype=np.float32, sep=',') )
+                cluster_update_count = cluster_update_count[-1]
         clusters = np.reshape(clusters,(self.parameters["max_period"],self.parameters["operator_size"],self.algorithm.feature_size))
+        credits = np.reshape(credits,(self.parameters["max_period"],self.parameters["operator_size"]))
+        cluster_update_count = np.reshape(cluster_update_count,(self.parameters["max_period"],self.parameters["operator_size"]))
 
         for p,period in enumerate(self.periods):
             for ind,o in enumerate(period.op):
                 o.clusters = np.array(clusters[p][ind])
+                o.credits = [credits[p][ind]]
+                o.cluster_update_count = cluster_update_count[p][ind]
 
 
     def reset(self):
@@ -72,10 +90,19 @@ class CLRL:
                 self.reset()
         else:
             self.reset()
+
+        for p in self.periods:
+            p.reset()
+
+    def finished(self):
         self.clusters = []
+        self.credits = []
+        self.cluster_update_counts = []
         for p in self.periods:
             for o in p.op:
                 self.clusters.append(o.clusters)
+                self.credits.append(o.credits[-1])
+                self.cluster_update_counts.append(o.cluster_update_count)
             p.reset()
         
     
@@ -186,11 +213,16 @@ class CLRL:
             if credits[i] == -inf:
                 return np.random.randint(0, self.parameters["operator_size"])
         
-        if(np.std(credits)!= 0):
-            credits = (credits - np.min(credits))/(np.max(credits)-np.min(credits))
-        else:
+        # if(np.std(credits)!= 0):
+        #     credits = (credits - np.min(credits))/(np.max(credits)-np.min(credits))
+        # else:
+        #     return np.random.randint(0, self.parameters["operator_size"])
+        if(np.std(credits) == 0):
             return np.random.randint(0, self.parameters["operator_size"])
+
         
+        # for i in range(len(credits)):
+        #     print( [-1* credits[i] , self.parameters["gama"] * self.get_distance(i, candidate) ] )
         values = [(-1* credits[ind] + self.parameters["gama"] * self.get_distance(ind, candidate)) for ind in range(self.parameters["operator_size"])]
         best_op = np.argmin(values)
         return best_op

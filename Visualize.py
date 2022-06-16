@@ -4,21 +4,22 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from Problem  import *
 from Operators import *
-show_features = True
+show_features = False
 show_datas = True
 show_convergences = False 
-eps = 0.3
-alpha = 0.3
-gama = 0.9
-pNo = 15
+eps = 0.4
+alpha = 0.5
+gama = 0.3
+pNo = 2
 max_run=4
 w = 25
 learning = 1
 reward = 'average'
-# prob= SetUnionKnapsack('Data/SUKP',pNo)
-prob = OneMax(750)
+prob= SetUnionKnapsack('Data/SUKP',1)
 pName = prob.ID
-pName='1000'
+
+# prob = OneMax(750)
+# pName='1000'
 o="CLRL"
 operator_pool = [ disABC(),  nABC(), bitABC(), ibinABC()]
 operator_pool = [ flipABC(),  nABC(), BABC(), ibinABC()]

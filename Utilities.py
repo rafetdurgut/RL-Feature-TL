@@ -40,7 +40,9 @@ class Logger:
                     # else:
                     with open(file_name, 'a') as f:
                         write = csv.writer(f)
-                        if len(writing_data[0])>1 and isinstance(writing_data[0][0],(list,np.ndarray)):
+                        if isinstance(writing_data[0], (np.float64,np.int64,np.int32,np.float32)):
+                            write.writerow(writing_data)
+                        elif len(writing_data[0])>1 and isinstance(writing_data[0][0],(list,np.ndarray)):
                             for l in writing_data:
                                 for o in l:
                                     write.writerow([*o])

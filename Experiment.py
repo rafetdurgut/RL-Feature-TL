@@ -43,8 +43,10 @@ class Experiment:
             self.optimizer.run()
             self.times.append( time.time() - start_time) 
             self.mean.append(self.optimizer.global_best.cost)
+            self.operator_selector.finished()
             self.algorithm_logger.log()
             self.aos_logger.log()
+        
             self.optimizer.reset()
         print("--------------------------------")
         print(f" mean : {np.mean(self.mean)}")
