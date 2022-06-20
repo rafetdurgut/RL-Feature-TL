@@ -34,8 +34,8 @@ class OneMax(AbstractBaseProblem):
         self.ID = str(dimension)
         self.best = dimension
         #Temp vars
-        self.m =100
-        self.n=100
+        self.m =dimension
+        self.n=dimension
 
     def objective_function(self, solution):
         return solution, np.sum(solution)

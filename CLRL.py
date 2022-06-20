@@ -36,7 +36,7 @@ class CLRL:
     def __init__(self, parameters):
         #General informations
         self.parameters = parameters
-        self.parameters["max_period"] = 10
+        self.parameters["max_period"] = 5
         self.informations = dict({'iteration_number':0, 'period_number':0})
         self.cluster_history = []
         self.credit_history = []
@@ -115,7 +115,10 @@ class CLRL:
     def get_reward(self, new_cost, old_cost):
         if(new_cost==0):
             return 0
-        r = float(( new_cost - old_cost)) * (self.algorithm.global_best.cost/new_cost)
+        if self.parameters["reward_func"] == 0:
+            r = float(( new_cost > old_cost)) * (self.algorithm.global_best.cost/new_cost)
+        else:
+            r = float(( new_cost - old_cost)) * (self.algorithm.global_best.cost/new_cost)
         return max(0,r)
 
     #Operator used and supply feedback
@@ -211,7 +214,8 @@ class CLRL:
                 return np.random.randint(0, self.parameters["operator_size"])
         
         if(np.std(credits)!= 0):
-            credits = (credits - np.min(credits))/(np.max(credits)-np.min(credits))
+            credits = (credits/np.max(credits))
+            # credits = (credits - np.min(credits))/(np.max(credits)-np.min(credits))
         else:
             return np.random.randint(0, self.parameters["operator_size"])
         
@@ -221,6 +225,7 @@ class CLRL:
         #     print( [-1* credits[i] , self.parameters["gama"] * self.get_distance(i, candidate) ] )
         values = [(-1* credits[ind] + self.parameters["gama"] * self.get_distance(ind, candidate)) for ind in range(self.parameters["operator_size"])]
         best_op = np.argmin(values)
+        # print(best_op)
         return best_op
 
     def __conf__(self):

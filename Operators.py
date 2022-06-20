@@ -52,10 +52,9 @@ class ibinABC(AbstractOperator):
 
     def get_candidate(self, i, n):
         e_dim = int(np.random.random() * 0.1 * self.algorithm.problem.dimension +
-                    math.exp(-4 * (self.algorithm.iteration / self.algorithm.max_iteration)) *
-                    (0.1 * self.algorithm.problem.dimension) + 1)
-
+                    math.exp(-4 * (self.algorithm.iteration / self.algorithm.max_iteration)) *(0.1 * self.algorithm.problem.dimension) + 1)
         q = self.qMax - ((self.qMax - self.qMin) / self.algorithm.max_iteration) * (self.algorithm.iteration)
+        
         if n.fitness > i.fitness:
             q = 0
         selected_dims = np.random.permutation(self.algorithm.problem.dimension)[0:e_dim]
@@ -69,6 +68,22 @@ class ibinABC(AbstractOperator):
     def __str__(self):
         return "ibinABC"
 
+
+class NBABC(AbstractOperator):
+    def __init__(self, max_flips=0.1):
+        super(NBABC, self).__init__()
+        self.max_flips = max_flips
+    def get_candidate(self, i, k):
+        numD = int(math.ceil(self.max_flips*self.algorithm.problem.dimension))
+        selected_dims = np.random.permutation(self.algorithm.problem.dimension)[0:numD]
+        for d in selected_dims:
+            if i.solution[d] != k.solution[d]:
+                i.solution[d] =  k.solution[d]
+        i.evaluate()
+        return i
+
+    def __str__(self):
+        return "nABC"
 
 class nABC(AbstractOperator):
     def get_candidate(self, i, k):
@@ -104,7 +119,7 @@ class BABC(AbstractOperator):
             i.cost = e2
 
         # just to update fitness value in bee.
-        i.calculate_fitness()
+        i.evaluate()
         return i
 
     def costFE(self):

@@ -72,6 +72,6 @@ class Bee:
 
     def calculate_fitness(self):
         if (self.cost>0):
-            self.fitness =(1/(1+self.cost))
+            self.fitness = (1/(1+self.cost))
         else:
             self.fitness = 1 + abs(self.cost)

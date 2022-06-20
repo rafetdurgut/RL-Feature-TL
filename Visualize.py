@@ -4,28 +4,26 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from Problem  import *
 from Operators import *
-show_features = False
+show_features = True
 show_datas = True
 show_convergences = False 
 eps = 0.4
 alpha = 0.5
-gama = 0.3
+gama = 0.9
 pNo = 2
-max_run=10
+max_run=5
 w = 25
 learning = 1
-reward = 'average'
-# prob= SetUnionKnapsack('Data/SUKP',1)
-# pName = prob.ID
+reward = 'extreme'
+prob= SetUnionKnapsack('Data/SUKP',6)
+pName = prob.ID
 
-prob = OneMax(750)
-pName='1000'
+# prob = OneMax(750)
+# pName='1000'
 o="CLRL"
-operator_pool = [ disABC(),  nABC(), bitABC(), ibinABC()]
-operator_pool = [ flipABC(),  nABC(), BABC(), ibinABC()]
-operator_size = len(operator_pool)
 
-# operator_pool = [ disABC(),  binABC(), ibinABC()]
+operator_pool = [  flipABC(), ibinABC(), nABC(), BABC()]
+operator_size = len(operator_pool)
 
 if show_features:
     sns.set_theme(palette="tab10")
@@ -38,12 +36,12 @@ if show_features:
     for r in range(max_run):
         temp_df = df[df["run"]==r]
         fig, axes = plt.subplots(3,2)
-        sns.scatterplot(data=temp_df, x="iteration", y="f0", hue="op_no", ax=axes[0][0], legend = True, palette="tab10")
-        sns.scatterplot(data=temp_df, x="iteration", y="f1", hue="op_no", ax=axes[0][1] ,legend = False, palette="tab10")
-        sns.scatterplot(data=temp_df, x="iteration", y="f2", hue="op_no", ax=axes[1][0], legend = False, palette="tab10")
-        sns.scatterplot(data=temp_df, x="iteration", y="f3", hue="op_no", ax=axes[1][1] ,legend = False, palette="tab10")
-        sns.scatterplot(data=temp_df, x="iteration", y="f4", hue="op_no", ax=axes[2][0], legend = False, palette="tab10")
-        sns.scatterplot(data=temp_df, x="iteration", y="f5", hue="op_no", ax=axes[2][1], legend = False, palette="tab10")
+        sns.scatterplot(data=temp_df, x="iteration", y="f6", hue="op_no", ax=axes[0][0], legend = True, palette="tab10")
+        sns.scatterplot(data=temp_df, x="iteration", y="f7", hue="op_no", ax=axes[0][1] ,legend = False, palette="tab10")
+        sns.scatterplot(data=temp_df, x="iteration", y="f8", hue="op_no", ax=axes[1][0], legend = False, palette="tab10")
+        sns.scatterplot(data=temp_df, x="iteration", y="f9", hue="op_no", ax=axes[1][1] ,legend = False, palette="tab10")
+        sns.scatterplot(data=temp_df, x="iteration", y="f10", hue="op_no", ax=axes[2][0], legend = False, palette="tab10")
+        sns.scatterplot(data=temp_df, x="iteration", y="f11", hue="op_no", ax=axes[2][1], legend = False, palette="tab10")
         axes[0][0].set_ylim(bottom=0,top=1)
         plt.show()
 

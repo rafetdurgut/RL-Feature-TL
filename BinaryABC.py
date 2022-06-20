@@ -35,6 +35,16 @@ class BinaryABC:
         self.FE = 0
         self.landscape_features = []
         
+    def reset(self):
+        self.colony = [Bee(self.problem) for _ in range(self.pop_size)]
+        # keep best Bee
+        self.global_best = Bee(self.problem)
+        self.probabilities = np.zeros(self.pop_size)
+        self.convergence = list()
+        self.iteration = 0
+        self.FE = 0
+        self.landscape_features = []
+        
 
     def employed_bee(self):
         self.calculate_cdf()
@@ -87,6 +97,10 @@ class BinaryABC:
             self.global_best = copy.deepcopy(best_solution)
             self.convergence.append((self.iteration, best_solution.cost))
 
+            
+
+
+
     def calculate_cdf(self):
         #CDF
         sum_fitness = sum([x.fitness for x in self.colony])
@@ -105,18 +119,19 @@ class BinaryABC:
 
     def derive_func_eval_count(self):
         return self.iteration * self.operator.costFE()
-    def reset(self):
-        self.colony = [Bee(self.problem) for _ in range(self.pop_size)]
-        # keep best Bee
-        self.global_best = Bee(self.problem)
-        self.probabilities = np.zeros(self.pop_size)
-        self.convergence = list()
 
     def run(self):
         self.iteration = 0
         while not self.stop_condition():
+    
             parents = copy.deepcopy(self.colony)
             p_gbest = copy.deepcopy(self.global_best)
+
+            # parent_std = np.std([a.cost for  a in self.colony])
+            # parent_mean = np.mean([a.trial for  a in self.colony])
+            # best_known = best_solution.cost
+            # sum_columns = np.std([a.solution for  a in self.colony],axis=0)
+            # diff_bits = np.sum(sum_columns)/self.problem.dimension
 
             for b in self.colony:
                 b.prev_solution = b.solution.copy()
