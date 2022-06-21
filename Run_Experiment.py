@@ -26,7 +26,7 @@ if loadFileName == "None":
 
 problem= OneMax(pNo)
 abc = BinaryABC(problem, pop_size=20, maxFE=250*40, limit=50)
-operator_pool = [ flipABC(),  nABC(), BABC(), ibinABC()]
+operator_pool = [ flipABC(), nABC(), ibinABC(), NBABC() ]
 parameters = {'operator_size': len(operator_pool), 'reward_type': rewardType, 'W':W, 'alpha':alpha, 'gama':gama, 'eps':eps, 'learning_mode':learning_mode, 'load_file':loadFileName, 'reward_func':reward_func}
 operator_selectors = CLRL(parameters)
 alg_outs = ["convergence"]

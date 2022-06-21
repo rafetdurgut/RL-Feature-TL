@@ -67,10 +67,12 @@ for c in configurations:
         data_CRL_max.append(np.max(data))
         data_CRL_std.append(np.std(data))
 
-        if data_CRL_mean[ind] != data_RL_mean[ind]:
+        if len(data_CRL) == len(data_CRL):
             w,p = wilcoxon(data_RL[ind],data_CRL[ind])
-            print(p)
-            print(c)
+            if p<0.05:
+                print(p)
+                print(c)
+                print(data_CRL_mean)
             ss.append(p)
         else:
             ss.append(1)
