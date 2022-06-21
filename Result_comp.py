@@ -1,6 +1,7 @@
 
 import csv
 from itertools import product
+from re import I
 from Problem import *
 def get_best_data(fileName, operator_size):
     datas = []
@@ -97,11 +98,15 @@ for pno in np.arange(2500,5000,250):
     data_CRL_mean.append(np.mean(data))
     data_CRL_max.append(np.max(data))
     data_CRL_std.append(np.std(data))
+    print(data_random_mean[ind])
+    print(data_CRL_mean[ind])
+    print(data_RL_mean[ind])
 
     if (data_CRL_mean[ind] != data_RL_mean[ind]) or (len(data_RL[ind]) != len(data_CRL[ind])):
         w,p = wilcoxon(data_RL[ind],data_CRL[ind])
         print(p)
         print(pno)
+        
         ss.append(p)
     else:
         ss.append(1)
