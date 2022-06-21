@@ -101,6 +101,8 @@ for pno in np.arange(500,5001,250):
     print(data_random_mean[ind])
     print(data_CRL_mean[ind])
     print(data_RL_mean[ind])
+    print(len(data_RL[ind]))
+    print(len(data_CRL[ind]))
 
     if (data_CRL_mean[ind] != data_RL_mean[ind]) or (len(data_RL[ind]) != len(data_CRL[ind])):
         w,p = wilcoxon(data_RL[ind],data_CRL[ind])
