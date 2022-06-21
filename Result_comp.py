@@ -71,7 +71,7 @@ data_CRL_mean =[]
 data_CRL_max =[]
 data_CRL_std =[]
 ind = 0
-for pno in np.arange(2500,5000,250):
+for pno in np.arange(500,5001,250):
     
     # problem=SetUnionKnapsack('Data/SUKP',pno)
     problem = OneMax(pno)
