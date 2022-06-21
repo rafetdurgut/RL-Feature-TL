@@ -67,7 +67,7 @@ for c in configurations:
         data_CRL_max.append(np.max(data))
         data_CRL_std.append(np.std(data))
 
-        if len(data_CRL) == len(data_CRL):
+        if len(data_CRL) == len(data_RL):
             w,p = wilcoxon(data_RL[ind],data_CRL[ind])
             if p<0.05:
                 print(p)
