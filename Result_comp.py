@@ -35,10 +35,10 @@ stds = []
 
 
 c=dict()
-c["Method"] = "average"
-c["W"] = 100
+c["Method"] = "extreme"
+c["W"] = 25
 c["eps"] = 0.3
-c["alpha"] = 0.5
+c["alpha"] = 0.9
 c["gama"] = 0.5
 
 
@@ -46,8 +46,8 @@ c2=dict()
 c2["Method"] = "extreme"
 c2["W"] = 25
 c2["eps"] = 0.3
-c2["alpha"] = 0.5
-c2["gama"] = 0.3
+c2["alpha"] = 0.9
+c2["gama"] = 0.5
 
 filenames=[]
 ss=[]
@@ -76,12 +76,12 @@ for pno in np.arange(2500,5000,250):
     learned = False
     filenames.append(problem.dosyaAdi)
     
-    # file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-{learned}-{problem.dosyaAdi}.csv"
-    # data =get_best_data(file_name, 3)
-    # data_random.append(data)
-    # data_random_max.append(np.max(data))
-    # data_random_mean.append(np.mean(data))
-    # data_random_std.append(np.std(data))
+    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-{learned}-{problem.dosyaAdi}.csv"
+    data =get_best_data(file_name, 3)
+    data_random.append(data)
+    data_random_max.append(np.max(data))
+    data_random_mean.append(np.mean(data))
+    data_random_std.append(np.std(data))
     
     file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{learned}-1-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
@@ -109,8 +109,12 @@ ps = []
 # print([data_random_max,data_random_mean , data_random_std])
 # print([data_RL_max,data_RL_mean , data_RL_std])
 # print([data_CRL_max, data_CRL_mean , data_CRL_std])
-# print(data_random_mean)
+print(data_random_mean)
 print(data_RL_mean)
 print(data_CRL_mean)
+print('-'*50)
 print(data_CRL_max)
+print(data_RL_max)
+print('-'*50)
+
 print([ss])
