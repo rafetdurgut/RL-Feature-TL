@@ -52,7 +52,7 @@ for c in configurations:
     learned = False
 
     file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{learned}-{c['reward_func']}-{problem.dosyaAdi}.csv"
-    file_name2 = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{learned}-{c['reward_func']}-{problem.dosyaAdi}.csv"
+    file_name2 = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-{learned}-{c['reward_func']}-{problem.dosyaAdi}.csv"
     if exists(file_name) and exists(file_name2):
         data =get_best_data(file_name, 3)
         data_RL.append(data)
