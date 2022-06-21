@@ -40,6 +40,7 @@ c["W"] = 25
 c["eps"] = 0.3
 c["alpha"] = 0.9
 c["gama"] = 0.5
+c["reward"] = 0.5
 
 
 c2=dict()
@@ -76,7 +77,7 @@ for pno in np.arange(2500,5000,250):
     learned = False
     filenames.append(problem.dosyaAdi)
     
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-{learned}-{problem.dosyaAdi}.csv"
+    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-{learned}-1-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_random.append(data)
     data_random_max.append(np.max(data))
