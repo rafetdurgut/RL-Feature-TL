@@ -36,10 +36,10 @@ stds = []
 
 c=dict()
 c["Method"] = "average"
-c["W"] = 25
-c["eps"] = 0.4
+c["W"] = 100
+c["eps"] = 0.3
 c["alpha"] = 0.5
-c["gama"] = 0.3
+c["gama"] = 0.5
 
 
 c2=dict()
@@ -69,7 +69,7 @@ data_CRL_mean =[]
 data_CRL_max =[]
 data_CRL_std =[]
 ind = 0
-for pno in np.arange(500,5000,250):
+for pno in np.arange(2500,5000,250):
     
     # problem=SetUnionKnapsack('Data/SUKP',pno)
     problem = OneMax(pno)
@@ -83,14 +83,14 @@ for pno in np.arange(500,5000,250):
     # data_random_mean.append(np.mean(data))
     # data_random_std.append(np.std(data))
     
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{learned}-{problem.dosyaAdi}.csv"
+    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{learned}-1-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_RL.append(data)
     data_RL_mean.append(np.mean(data))
     data_RL_max.append(np.max(data))
     data_RL_std.append(np.std(data))
 
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-{learned}-{problem.dosyaAdi}.csv"
+    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-{learned}-1-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_CRL.append(data)
     data_CRL_mean.append(np.mean(data))
@@ -99,6 +99,7 @@ for pno in np.arange(500,5000,250):
 
     if data_CRL_mean[ind] != data_RL_mean[ind]:
         w,p = wilcoxon(data_RL[ind],data_CRL[ind])
+        print(p)
         ss.append(p)
     else:
         ss.append(1)
