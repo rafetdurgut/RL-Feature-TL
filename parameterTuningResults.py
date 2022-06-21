@@ -49,14 +49,14 @@ for c in configurations:
     problem = OneMax(pno)
     learned = False
 
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{learned}-{problem.dosyaAdi}-{c['reward_func']}.csv"
+    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{learned}-{c['reward_func']}-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_RL.append(data)
     data_RL_mean.append(np.mean(data))
     data_RL_max.append(np.max(data))
     data_RL_std.append(np.std(data))
 
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-{learned}-{problem.dosyaAdi}-{c['reward_func']}.csv"
+    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-{learned}-{c['reward_func']}-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_CRL.append(data)
     data_CRL_mean.append(np.mean(data))
@@ -65,6 +65,7 @@ for c in configurations:
 
     if data_CRL_mean[ind] != data_RL_mean[ind]:
         w,p = wilcoxon(data_RL[ind],data_CRL[ind])
+        print(p)
         ss.append(p)
     else:
         ss.append(1)
