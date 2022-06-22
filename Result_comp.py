@@ -71,14 +71,15 @@ data_CRL_mean =[]
 data_CRL_max =[]
 data_CRL_std =[]
 ind = 0
-for pno in np.arange(500,5001,250):
+# for pno in np.arange(500,5001,250):
+for pno in np.arange(0,30):
     
-    # problem=SetUnionKnapsack('Data/SUKP',pno)
-    problem = OneMax(pno)
+    problem=SetUnionKnapsack('Data/SUKP',pno)
+    # problem = OneMax(pno)
     learned = True
     filenames.append(problem.dosyaAdi)
     
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-False-1-{problem.dosyaAdi}.csv"
+    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-True-1-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_random.append(data)
     data_random_max.append(np.max(data))
