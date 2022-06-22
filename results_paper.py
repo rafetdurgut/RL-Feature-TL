@@ -2,6 +2,8 @@
 import csv
 from itertools import product
 from re import I
+
+import pandas as pd
 from Problem import *
 def get_best_data(fileName, operator_size):
     datas = []
@@ -70,16 +72,29 @@ data_CRL=[]
 data_CRL_mean =[]
 data_CRL_max =[]
 data_CRL_std =[]
+
+data_RL_L=[]
+data_RL_L_mean =[]
+data_RL_L_max =[]
+data_RL_L_std =[]
+
+data_CRL_L=[]
+data_CRL_L_mean =[]
+data_CRL_L_max =[]
+data_CRL_L_std =[]
 ind = 0
+data_means = np.zeros((30,4))
+data_maxs = []
 # for pno in np.arange(500,5001,250):
 for pno in np.arange(0,30):
     
     problem=SetUnionKnapsack('Data/SUKP',pno)
     # problem = OneMax(pno)
+
     learned = False
     filenames.append(problem.dosyaAdi)
     
-    # file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-True-1-{problem.dosyaAdi}.csv"
+    # file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-False-1-{problem.dosyaAdi}.csv"
     # data =get_best_data(file_name, 3)
     # data_random.append(data)
     # data_random_max.append(np.max(data))
@@ -99,20 +114,46 @@ for pno in np.arange(0,30):
     data_CRL_mean.append(np.mean(data))
     data_CRL_max.append(np.max(data))
     data_CRL_std.append(np.std(data))
-    # print(data_random_mean[ind])
-    print(data_CRL_mean[ind])
-    print(data_RL_mean[ind])
-    print(len(data_RL[ind]))
-    print(len(data_CRL[ind]))
 
-    if (data_CRL_mean[ind] != data_RL_mean[ind]) and (len(data_RL[ind]) == len(data_CRL[ind])):
-        w,p = wilcoxon(data_RL[ind],data_CRL[ind])
-        print(p)
-        print(pno)
+    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-True-1-{problem.dosyaAdi}.csv"
+    data =get_best_data(file_name, 3)
+    data_RL_L.append(data)
+    data_RL_L_mean.append(np.mean(data))
+    data_RL_L_max.append(np.max(data))
+    data_RL_L_std.append(np.std(data))
+
+    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-True-1-{problem.dosyaAdi}.csv"
+    data =get_best_data(file_name, 3)
+    data_CRL_L.append(data)
+    data_CRL_L_mean.append(np.mean(data))
+    data_CRL_L_max.append(np.max(data))
+    data_CRL_L_std.append(np.std(data))
+
+    # data_means[ind][0] = data_random_mean[ind]
+    # data_means[ind][1] = data_RL_mean[ind]
+    # data_means[ind][2] = data_CRL_mean[ind]
+    # data_means[ind][3] = data_RL_L_mean[ind]
+    # data_means[ind][4] = data_CRL_L_mean[ind]
+    data_means[ind][0] = data_RL_mean[ind]
+    data_means[ind][1] = data_CRL_mean[ind]
+    data_means[ind][2] = data_RL_L_mean[ind]
+    data_means[ind][3] = data_CRL_L_mean[ind]
+
+    
+    # print(data_random_mean[ind])
+    # print(data_CRL_mean[ind])
+    # print(data_RL_mean[ind])
+    # print(len(data_RL[ind]))
+    # print(len(data_CRL[ind]))
+    # w,p = wilcoxon(data_RL[ind],data_random[ind])
+    # if (data_CRL_mean[ind] != data_RL_mean[ind]) and (len(data_RL[ind]) == len(data_CRL[ind])):
+    #     w,p = wilcoxon(data_RL[ind],data_CRL[ind])
+    #     print(p)
+    #     print(pno)
         
-        ss.append(p)
-    else:
-        ss.append(1)
+    # ss.append(p)
+    # else:
+    #     ss.append(1)
     ind += 1
 
 ps = []
@@ -120,11 +161,12 @@ ps = []
 # print([data_RL_max,data_RL_mean , data_RL_std])
 # print([data_CRL_max, data_CRL_mean , data_CRL_std])
 # print(data_random_mean)
-print(data_RL_mean)
-print(data_CRL_mean)
-print('-'*50)
-print(data_CRL_max)
-print(data_RL_max)
-print('-'*50)
+print(data_means)
+from scipy.stats import rankdata
+ranks = []
+for i in range(30):
+    ranks.append(1+len(data_means[i]) - rankdata(data_means[i]).astype(int) )
 
-print([ss])
+# pd_data = pd.DataFrame(data_means,columns=['random','one run','all run','one run w/l','all run w/l'])
+print(ranks)
+print(np.mean(ranks,axis=0))

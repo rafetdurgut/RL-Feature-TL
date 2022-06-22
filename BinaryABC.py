@@ -143,7 +143,7 @@ class BinaryABC:
 
             self.memorize()
             self.scout_bee()
-            self.features = Features(self.problem.ptype).population_features(parents,self.colony,p_gbest,self.global_best,self.pop_size,self.problem.dimension,self.limit,self.iteration)
+            self.features = Features(self.problem.ptype).population_features(parents,self.colony,p_gbest,self.global_best,self.pop_size,self.problem.dimension,self.limit,self.iteration/self.max_iteration)
             self.iteration += 1
             self.operator_selector.next_iteration()
         print(f"{self.iteration} iteration best:{self.global_best.cost}")
