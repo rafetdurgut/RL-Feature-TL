@@ -7,22 +7,21 @@ from Operators import *
 show_features = False
 show_datas = True
 show_convergences = False 
-rewardType = "extreme"
+rewardType = "average"
 W = 25
 eps = 0.3
 alpha = 0.9
 gama = 0.5
-pNo = 2500
+pNo = 15
 reward_func = 0
-pNo = 2
 max_run=5
 w = 25
 learning = 0
-# prob= SetUnionKnapsack('Data/SUKP',6)
-# pName = prob.ID
+prob= SetUnionKnapsack('Data/SUKP',pNo)
+pName = prob.ID
 
 # prob = OneMax(750)
-pName='2500'
+# pName='2500'
 o="CLRL"
 
 operator_pool = [  flipABC(), ibinABC(), nABC(), BABC()]
