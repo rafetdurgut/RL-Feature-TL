@@ -38,7 +38,7 @@ stds = []
 
 
 c=dict()
-c["Method"] = "extreme"
+c["Method"] = "average"
 c["W"] = 50
 c["eps"] = 0.3
 c["alpha"] = 0.5
