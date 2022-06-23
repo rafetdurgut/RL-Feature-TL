@@ -39,11 +39,11 @@ stds = []
 
 c=dict()
 c["Method"] = "extreme"
-c["W"] = 25
-c["eps"] = 0.3
-c["alpha"] = 0.9
-c["gama"] = 0.5
-c["reward"] = 0.5
+c["W"] = 50
+c["eps"] = 0.4
+c["alpha"] = 0.5
+c["gama"] = 0.9
+c["reward"] = 0
 
 
 c2=dict()
