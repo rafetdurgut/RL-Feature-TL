@@ -45,11 +45,11 @@ c["reward"] = 0
 
 
 c2=dict()
-c2["Method"] = "extreme"
-c2["W"] = 25
+c2["Method"] = "average"
+c2["W"] = 50
 c2["eps"] = 0.3
 c2["alpha"] = 0.5
-c2["gama"] = 0.5
+c2["gama"] = 0.9
 
 filenames=[]
 ss=[]
@@ -109,7 +109,6 @@ for pno in np.arange(500,5001,250):
         w,p = wilcoxon(data_RL[ind],data_CRL[ind])
         print(p)
         print(pno)
-        
         ss.append(p)
     else:
         ss.append(1)
