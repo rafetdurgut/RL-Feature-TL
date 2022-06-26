@@ -76,7 +76,7 @@ for pno in np.arange(500,5001,250):
     
     # problem=SetUnionKnapsack('Data/SUKP',pno)
     problem = OneMax(pno)
-    learned = False
+    learned = True
     filenames.append(problem.dosyaAdi)
     
     # file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-False-0-{problem.dosyaAdi}.csv"
