@@ -79,12 +79,12 @@ for pno in np.arange(500,5001,250):
     learned = False
     filenames.append(problem.dosyaAdi)
     
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-False-0-{problem.dosyaAdi}.csv"
-    data =get_best_data(file_name, 3)
-    data_random.append(data)
-    data_random_max.append(np.max(data))
-    data_random_mean.append(np.mean(data))
-    data_random_std.append(np.std(data))
+    # file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-False-0-{problem.dosyaAdi}.csv"
+    # data =get_best_data(file_name, 3)
+    # data_random.append(data)
+    # data_random_max.append(np.max(data))
+    # data_random_mean.append(np.mean(data))
+    # data_random_std.append(np.std(data))
     
     file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{learned}-0-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
@@ -106,7 +106,7 @@ for pno in np.arange(500,5001,250):
     print(len(data_CRL[ind]))
 
     if (data_CRL_mean[ind] != data_RL_mean[ind]) and (len(data_RL[ind]) == len(data_CRL[ind])):
-        w,p = wilcoxon(data_RL[ind],data_random[ind])
+        w,p = wilcoxon(data_RL[ind],data_CRL[ind])
         print(p)
         print(pno)
         ss.append(p)
@@ -118,7 +118,7 @@ ps = []
 # print([data_random_max,data_random_mean , data_random_std])
 # print([data_RL_max,data_RL_mean , data_RL_std])
 # print([data_CRL_max, data_CRL_mean , data_CRL_std])
-print(data_random_mean)
+# print(data_random_mean)
 print(data_RL_mean)
 print(data_CRL_mean)
 print('-'*50)
