@@ -71,11 +71,11 @@ data_CRL_mean =[]
 data_CRL_max =[]
 data_CRL_std =[]
 ind = 0
-for pno in np.arange(500,5001,250):
-# for pno in np.arange(0,30):
+# for pno in np.arange(500,5001,250):
+for pno in np.arange(0,30):
     
-    # problem=SetUnionKnapsack('Data/SUKP',pno)
-    problem = OneMax(pno)
+    problem=SetUnionKnapsack('Data/SUKP',pno)
+    # problem = OneMax(pno)
     learned = True
     filenames.append(problem.dosyaAdi)
     
