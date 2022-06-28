@@ -223,11 +223,15 @@ class CLRL:
         
         # for i in range(len(credits)):
         #     print( [-1* credits[i] , self.parameters["gama"] * self.get_distance(i, candidate) ] )
-        values = [(-(1-self.parameters["gama"])* credits[ind] + self.parameters["gama"] * self.get_distance(ind, candidate)) for ind in range(self.parameters["operator_size"])]
+        if self.parameters["credit_func"] == 0:
+            values = [(-(1-self.parameters["gama"])* credits[ind] + self.parameters["gama"] * self.get_distance(ind, candidate)) for ind in range(self.parameters["operator_size"])]
+        else:
+            values = [(-1* credits[ind] + self.parameters["gama"] * self.get_distance(ind, candidate)) for ind in range(self.parameters["operator_size"])]
+
         best_op = np.argmin(values)
         # print(best_op)
         return best_op
 
     def __conf__(self):
-        return ['CLRL', self.parameters["operator_size"] ,self.parameters["reward_type"],  self.parameters["eps"], self.parameters["W"], self.parameters["alpha"],self.parameters["gama"]  ,self.parameters["learning_mode"] , self.parameters["load_file"] != None,self.parameters["reward_func"],]
+        return ['CLRL', self.parameters["operator_size"] ,self.parameters["reward_type"],  self.parameters["eps"], self.parameters["W"], self.parameters["alpha"],self.parameters["gama"]  ,self.parameters["learning_mode"] , self.parameters["load_file"],self.parameters["reward_func"],self.parameters["credit_func"]]
 

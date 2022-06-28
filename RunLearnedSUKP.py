@@ -7,7 +7,7 @@ def thread_function(conf):
     time.sleep(1)
     print(conf)
     os.system(f"python ./Run_Experiment_SUKP.py {' '.join(map(str,conf.values()))}")
-parameters = {"pNo":[2,4,7,8,11,16,18,21,24,26,28],"Method": ["extreme"], "W": [25], "eps": [0.3], "alpha": [0.9],"gama": [0.5],"learning_mode":[0,1],"loadFileName":["CLRL-4-extreme-0.3-25-0.9-0.5-1-False-0-sukp300_285_0.10_0.75.txt.csv"],"reward_func":[0]}
+parameters = {"pNo":[2,7,14,18,21,26],"Method": ["extreme"], "W": [25], "eps": [0.3], "alpha": [0.9],"gama": [0.5],"learning_mode":[0,1],"loadFileName":["CLRL-4-extreme-0.3-25-0.9-0.5-1-False-0-sukp300_285_0.10_0.75.txt.csv"],"reward_func":[0]}
 configurations = [dict(zip(parameters, v)) for v in product(*parameters.values())]
 for c in configurations:
     x = threading.Thread(target=thread_function, args=(c,))

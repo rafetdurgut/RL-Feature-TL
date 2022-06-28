@@ -7,16 +7,16 @@ from Operators import *
 show_features = False
 show_datas = True
 show_convergences = False 
-rewardType = "average"
+rewardType = "extreme"
 W = 25
 eps = 0.3
 alpha = 0.9
 gama = 0.5
-pNo = 15
+pNo = 10
 reward_func = 0
-max_run=5
+max_run=30
 w = 25
-learning = 0
+learning = 1
 prob= SetUnionKnapsack('Data/SUKP',pNo)
 pName = prob.ID
 
@@ -30,7 +30,7 @@ operator_size = len(operator_pool)
 if show_features:
     sns.set_theme(palette="tab10")
     # Visualize Cluster Centers
-    file_path = f"results/cluster_history-{o}-{operator_size}-{rewardType}-{eps}-{w}-{alpha}-{gama}-{learning}-False-{reward_func}-{pName}.csv"
+    file_path = f"results/cluster_history-{o}-{operator_size}-{rewardType}-{eps}-{w}-{alpha}-{gama}-{learning}-True-{reward_func}-{pName}.csv"
     columns = ["op_no","iteration","run"]
     for i in range(19):
         columns.append(f"f{i}")
