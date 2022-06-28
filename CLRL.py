@@ -54,12 +54,14 @@ class CLRL:
                 for r in row:
                     clusters.append( np.fromstring(r, dtype=np.float32, sep=',') )
                 clusters = clusters[-self.parameters["max_period"]*self.parameters["operator_size"]:]
-            with open(f"results/credits-{self.parameters['load_file']}", 'r',) as f:
-                row = f.readlines()
-                credits=[]
-                for r in row:
-                    credits.append( np.fromstring(r, dtype=np.float32, sep=',') )
-                credits = credits[-1]
+            if self.parameters["load_func"]==1:
+                with open(f"results/credits-{self.parameters['load_file']}", 'r',) as f:
+                    row = f.readlines()
+                    credits=[]
+                    for r in row:
+                        credits.append( np.fromstring(r, dtype=np.float32, sep=',') )
+                    credits = credits[-1]
+                credits = np.reshape(credits,(self.parameters["max_period"],self.parameters["operator_size"]))
             with open(f"results/cluster_update_counts-{self.parameters['load_file']}", 'r',) as f:
                 row = f.readlines()
                 cluster_update_count=[]
@@ -67,13 +69,15 @@ class CLRL:
                     cluster_update_count.append( np.fromstring(r, dtype=np.float32, sep=',') )
                 cluster_update_count = cluster_update_count[-1]
         clusters = np.reshape(clusters,(self.parameters["max_period"],self.parameters["operator_size"],self.algorithm.feature_size))
-        credits = np.reshape(credits,(self.parameters["max_period"],self.parameters["operator_size"]))
         cluster_update_count = np.reshape(cluster_update_count,(self.parameters["max_period"],self.parameters["operator_size"]))
 
         for p,period in enumerate(self.periods):
             for ind,o in enumerate(period.op):
                 o.clusters = np.array(clusters[p][ind])
-                o.credits = [credits[p][ind]]
+                if self.parameters["load_func"]==1:
+                    o.credits = [credits[p][ind]]
+                else:
+                    o.credits = [-inf]
                 o.cluster_update_count = cluster_update_count[p][ind]
 
 
