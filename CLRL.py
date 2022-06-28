@@ -237,5 +237,5 @@ class CLRL:
         return best_op
 
     def __conf__(self):
-        return ['CLRL', self.parameters["operator_size"] ,self.parameters["reward_type"],  self.parameters["eps"], self.parameters["W"], self.parameters["alpha"],self.parameters["gama"]  ,self.parameters["learning_mode"] , self.parameters["load_file"],self.parameters["reward_func"],self.parameters["credit_func"]]
+        return ['CLRL', self.parameters["operator_size"] ,self.parameters["reward_type"],  self.parameters["eps"], self.parameters["W"], self.parameters["alpha"],self.parameters["gama"]  ,self.parameters["learning_mode"] , self.parameters["load_file"],self.parameters["reward_func"],self.parameters["credit_func"],self.parameters["load_func"]]
 
