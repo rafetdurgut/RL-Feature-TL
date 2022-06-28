@@ -46,11 +46,11 @@ for c in configurations:
     data_CRL_max =[]
     data_CRL_std =[]
     ind = 0
-    # for pno in np.arange(500,5001,250):
-    for pno in np.arange(0,30):
+    for pno in np.arange(500,5001,250):
+    # for pno in np.arange(0,30):
         
-        problem=SetUnionKnapsack('Data/SUKP',pno)
-        # problem = OneMax(pno)
+        # problem=SetUnionKnapsack('Data/SUKP',pno)
+        problem = OneMax(pno)
         # file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-False-0-{problem.dosyaAdi}.csv"
         # data =get_best_data(file_name, 3)
         # data_random.append(data)
@@ -85,7 +85,6 @@ for c in configurations:
         else:
             ss.append(1)
         ind += 1
-
     ps = []
     # print([data_random_max,data_random_mean , data_random_std])
     # print([data_RL_max,data_RL_mean , data_RL_std])
