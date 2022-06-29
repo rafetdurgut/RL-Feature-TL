@@ -23,7 +23,7 @@ def get_best_data(fileName, operator_size):
 import numpy as np
 
 
-parameters = {"pNo":[0],"Method": ["extreme"], "W": [25], "eps": [0.3], "alpha": [0.9],"gama": [0.5],"learning_mode":[0],"loadFileName":["CLRL-4-extreme-0.3-25-0.9-0.5-1-None-1-1-2500.csv"],"reward_func":[1],"credit_func":[1],"load_func":[0]}
+parameters = {"pNo":[0],"Method": ["extreme"], "W": [25], "eps": [0.3], "alpha": [0.9],"gama": [0.5],"learning_mode":[0],"loadFileName":["CLRL-4-extreme-0.3-25-0.9-0.5-1-None-1-1-2500.csv"],"reward_func":[1],"credit_func":[1],"load_func":[0,1]}
 configurations = [dict(zip(parameters, v)) for v in product(*parameters.values())]
 for c in configurations:
 
@@ -58,14 +58,14 @@ for c in configurations:
         # data_random_mean.append(np.mean(data))
         # data_random_std.append(np.std(data))
         
-        file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-None-{c['reward_func']}-{c['credit_func']}-{problem.dosyaAdi}.csv"
+        file_name = f"results_27june/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{c['loadFileName']}-{c['reward_func']}-{c['credit_func']}-0-{problem.dosyaAdi}.csv"
         data =get_best_data(file_name, 3)
         data_RL.append(data)
         data_RL_mean.append(np.mean(data))
         data_RL_max.append(np.max(data))
         data_RL_std.append(np.std(data))
 
-        file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-{c['loadFileName']}-{c['reward_func']}-{c['credit_func']}-{c['load_func']}-{problem.dosyaAdi}.csv"
+        file_name = f"results_27june/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{c['loadFileName']}-{c['reward_func']}-{c['credit_func']}-1--{problem.dosyaAdi}.csv"
         data =get_best_data(file_name, 3)
         data_CRL.append(data)
         data_CRL_mean.append(np.mean(data))
@@ -90,5 +90,5 @@ for c in configurations:
     print(data_RL_max)
     print(data_CRL_max)
     print('-'*50)
-    print([ss])
+    print(sum(map(lambda x : x%2 == 1, listOfElems)))
 
