@@ -90,5 +90,5 @@ for c in configurations:
     print(data_RL_max)
     print(data_CRL_max)
     print('-'*50)
-    print(sum(map(lambda x : x%2 == 1, listOfElems)))
+    print(sum(map(lambda x : x%2 == 1, ss)))
 
