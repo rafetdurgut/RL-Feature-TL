@@ -65,7 +65,7 @@ for c in configurations:
         data_RL_max.append(np.max(data))
         data_RL_std.append(np.std(data))
 
-        file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{c['loadFileName']}-{c['reward_func']}-{c['credit_func']}-1--{problem.dosyaAdi}.csv"
+        file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{c['loadFileName']}-{c['reward_func']}-{c['credit_func']}-1-{problem.dosyaAdi}.csv"
         data =get_best_data(file_name, 3)
         data_CRL.append(data)
         data_CRL_mean.append(np.mean(data))
