@@ -23,7 +23,7 @@ def get_best_data(fileName, operator_size):
 import numpy as np
 
 
-parameters = {"pNo":[0],"Method": ["extreme"], "W": [25], "eps": [0.3], "alpha": [0.9],"gama": [0.5],"learning_mode":[0],"loadFileName":["CLRL-4-extreme-0.3-25-0.9-0.5-1-None-1-1-2500.csv"],"reward_func":[0,1],"credit_func":[0,1],"load_func":[0]}
+parameters = {"pNo":[0],"Method": ["extreme"], "W": [25], "eps": [0.3], "alpha": [0.9],"gama": [0.5],"learning_mode":[0],"loadFileName":["CLRL-4-extreme-0.3-25-0.9-0.5-1-None-1-1-2500.csv"],"reward_func":[1],"credit_func":[0,1],"load_func":[0,1]}
 configurations = [dict(zip(parameters, v)) for v in product(*parameters.values())]
 for c in configurations:
 
