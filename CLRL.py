@@ -21,7 +21,8 @@ class Operator:
         self.rewards = [0]
         self.reward_history = [0]
         self.trial.append(0)
-        
+        self.success.append(0)
+
 
 
 class Period:
@@ -44,7 +45,7 @@ class CLRL:
     def load_information(self):
         self.periods = [Period(self.parameters["operator_size"]) for _ in range(self.parameters["max_period"])]
         if self.parameters["load_file"] == None:
-            clusters = np.full((self.parameters["max_period"],self.parameters["operator_size"], self.algorithm.feature_size),np.inf)
+            clusters = np.full((self.parameters["max_period"],self.parameters["operator_size"], self.algorithm.feature_size),0)
             credits = np.full((self.parameters["max_period"],self.parameters["operator_size"]),-inf)
             cluster_update_count = np.full((self.parameters["max_period"],self.parameters["operator_size"]),1)
         else:
@@ -54,14 +55,12 @@ class CLRL:
                 for r in row:
                     clusters.append( np.fromstring(r, dtype=np.float32, sep=',') )
                 clusters = clusters[-self.parameters["max_period"]*self.parameters["operator_size"]:]
-            if self.parameters["load_func"]==1:
-                with open(f"results/credits-{self.parameters['load_file']}", 'r',) as f:
-                    row = f.readlines()
-                    credits=[]
-                    for r in row:
-                        credits.append( np.fromstring(r, dtype=np.float32, sep=',') )
-                    credits = credits[-1]
-                credits = np.reshape(credits,(self.parameters["max_period"],self.parameters["operator_size"]))
+            with open(f"results/credits-{self.parameters['load_file']}", 'r',) as f:
+                row = f.readlines()
+                credits=[]
+                for r in row:
+                    credits.append( np.fromstring(r, dtype=np.float32, sep=',') )
+                credits = credits[-1]
             with open(f"results/cluster_update_counts-{self.parameters['load_file']}", 'r',) as f:
                 row = f.readlines()
                 cluster_update_count=[]
@@ -70,14 +69,12 @@ class CLRL:
                 cluster_update_count = cluster_update_count[-1]
         clusters = np.reshape(clusters,(self.parameters["max_period"],self.parameters["operator_size"],self.algorithm.feature_size))
         cluster_update_count = np.reshape(cluster_update_count,(self.parameters["max_period"],self.parameters["operator_size"]))
+        credits = np.reshape(credits,(self.parameters["max_period"],self.parameters["operator_size"]))
 
         for p,period in enumerate(self.periods):
             for ind,o in enumerate(period.op):
                 o.clusters = np.array(clusters[p][ind])
-                if self.parameters["load_func"]==1:
-                    o.credits = [credits[p][ind]]
-                else:
-                    o.credits = [-inf]
+                o.credits = [credits[p][ind]]
                 o.cluster_update_count = cluster_update_count[p][ind]
 
 
@@ -88,7 +85,10 @@ class CLRL:
 
     def start(self):
         # Initial definitions..
+        print (self.informations['run_number'])
         self.operator_informations = []
+        self.cluster_history = []
+        self.credit_history = []
         if (self.parameters["learning_mode"] == 1):
             if(self.informations['run_number'] == 0):
                 self.reset()
@@ -104,7 +104,7 @@ class CLRL:
                 self.clusters.append(o.clusters)
                 self.credits.append(o.credits[-1])
                 self.cluster_update_counts.append(o.cluster_update_count)
-            p.reset()
+            #p.reset()
         
     
     def set_algorithm(self,algorithm, run_number):
@@ -122,7 +122,8 @@ class CLRL:
         if self.parameters["reward_func"] == 0:
             r = float(( new_cost > old_cost)) * (self.algorithm.global_best.cost/new_cost)
         else:
-            r = float(( new_cost - old_cost)) * (self.algorithm.global_best.cost/new_cost)
+            r =  float(( new_cost - old_cost)) * (self.algorithm.global_best.cost/new_cost)
+        return r
         return max(0,r)
 
     #Operator used and supply feedback
@@ -137,7 +138,7 @@ class CLRL:
             self.periods[self.informations["period_number"]].op[op].success[-1] += 1
             self.periods[self.informations["period_number"]].op[op].total_success += 1
             candidate.calculate_features(self.algorithm)
-            self.set_cluster(op, current)
+            self.set_cluster(op, candidate)
 
     def apply_rewards(self, op):
         if self.parameters["reward_type"] == "insta":
@@ -155,9 +156,9 @@ class CLRL:
         if(distance==inf):
             distance =0
         if self.periods[self.informations["period_number"]].op[op].credits[-1] == -inf:
-            credit = self.parameters["alpha"] * (r+self.parameters["gama"]*distance)
+            credit = self.parameters["alpha"] * (r + self.parameters["gama"]*distance)
         else: 
-            credit = (1 - self.parameters["alpha"]) * self.periods[self.informations["period_number"]].op[op].credits[-1] + self.parameters["alpha"] * (r+self.parameters["gama"]*distance)
+            credit = (1 - self.parameters["alpha"]) * self.periods[self.informations["period_number"]].op[op].credits[-1] + self.parameters["alpha"] * (r + self.parameters["gama"]*distance)
         self.periods[self.informations["period_number"]].op[op].credits.append(credit)
 
     def next_period(self):
@@ -191,15 +192,16 @@ class CLRL:
         dist = 0
         if self.informations["iteration_number"]==0 or len(y.features)==0:
             return dist
-        dist += (1/self.algorithm.feature_size)*np.linalg.norm(self.periods[self.informations["period_number"]].op[op].clusters - y.features)
+        dist += np.linalg.norm(self.periods[self.informations["period_number"]].op[op].clusters - y.features)
         return  dist
 
     def set_cluster(self, op, solution):
         if len(solution.features) == 0:
                 return
 
-        if np.sum(self.periods[self.informations["period_number"]].op[op].clusters) == np.inf :
+        if self.periods[self.informations["period_number"]].op[op].cluster_update_count == 1 :
             self.periods[self.informations["period_number"]].op[op].clusters = np.array(solution.features)
+            self.periods[self.informations["period_number"]].op[op].cluster_update_count += 1
             return
         for i in range(len(solution.features) ) :
             self.periods[self.informations["period_number"]].op[op].clusters[i] = self.periods[self.informations["period_number"]].op[op].clusters[i] + ((solution.features[i]-self.periods[self.informations["period_number"]].op[op].clusters[i]) / (self.periods[self.informations["period_number"]].op[op].cluster_update_count + 1))
@@ -227,15 +229,19 @@ class CLRL:
         
         # for i in range(len(credits)):
         #     print( [-1* credits[i] , self.parameters["gama"] * self.get_distance(i, candidate) ] )
-        if self.parameters["credit_func"] == 0:
-            values = [(-(1-self.parameters["gama"])* credits[ind] + self.parameters["gama"] * self.get_distance(ind, candidate)) for ind in range(self.parameters["operator_size"])]
-        else:
-            values = [(-1* credits[ind] + self.parameters["gama"] * self.get_distance(ind, candidate)) for ind in range(self.parameters["operator_size"])]
-
+        dists = [( self.get_distance(ind, candidate)) for ind in range(self.parameters["operator_size"])]
+        if(np.std(dists)== 0):
+            # dists = (dists/np.max(dists))
+            return np.random.randint(0, self.parameters["operator_size"])
+        # else:
+        #     return np.random.randint(0, self.parameters["operator_size"])
+        dists = (dists/np.max(dists))
+        values = [(-1* credits[ind] + self.parameters["gama"] * dists[ind]) for ind in range(self.parameters["operator_size"])]
         best_op = np.argmin(values)
+
         # print(best_op)
         return best_op
 
     def __conf__(self):
-        return ['CLRL', self.parameters["operator_size"] ,self.parameters["reward_type"],  self.parameters["eps"], self.parameters["W"], self.parameters["alpha"],self.parameters["gama"]  ,self.parameters["learning_mode"] , self.parameters["load_file"],self.parameters["reward_func"],self.parameters["credit_func"],self.parameters["load_func"]]
+        return ['CLRL', self.parameters["operator_size"] ,self.parameters["reward_type"],  self.parameters["eps"], self.parameters["W"], self.parameters["alpha"],self.parameters["gama"]  ,self.parameters["learning_mode"] , self.parameters["load_file"],self.parameters["reward_func"]]
 

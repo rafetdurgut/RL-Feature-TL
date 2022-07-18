@@ -17,20 +17,20 @@ class Bee:
         else:
             self.solution = solution
         self.evaluate()
+        
 
     def calculate_features(self, colony):
         #Solution Distance
         if not (colony.features):
             return
         self.features = np.zeros((7,))
-        self.features[0] = np.count_nonzero(colony.global_best.solution != self.prev_solution)/self.problem.dimension
-        self.features[1] = np.count_nonzero(self.solution != self.prev_solution)/self.problem.dimension
-
+        self.features[0] = np.count_nonzero(colony.global_best.solution != self.prev_solution)/self.problem.dimension       #How many bits had been far away from global best
+        self.features[1] = np.count_nonzero(self.solution != self.prev_solution)/self.problem.dimension                     #How many bits had been change
         #Objective Distance
         if self.problem.ptype == 0:
-            self.features[2] = abs(colony.global_best.cost - self.prev_cost)/colony.global_best.cost
-            self.features[3] = abs(self.prev_cost - self.cost)/self.prev_cost
-            cbest=min(colony.colony, key=lambda b: b.cost)
+            self.features[2] = colony.global_best.cost - self.prev_cost/colony.global_best.cost                        #How close to global best
+            self.features[3] = (self.prev_cost - self.cost)/self.prev_cost                                             #How much improved                              
+            cbest=min(colony.colony, key=lambda b: b.cost)  
             cworst=max(colony.colony, key=lambda b: b.cost)
             
         else:
@@ -49,7 +49,6 @@ class Bee:
     def evaluate(self):
         self.solution, self.cost = self.problem.objective_function(self.solution)
         self.calculate_fitness()
-        
 
     def initial(self):
         self.trial = 0

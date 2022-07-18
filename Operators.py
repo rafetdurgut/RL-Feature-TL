@@ -83,7 +83,7 @@ class NBABC(AbstractOperator):
         return i
 
     def __str__(self):
-        return "nABC"
+        return "nBABC"
 
 class nABC(AbstractOperator):
     def get_candidate(self, i, k):

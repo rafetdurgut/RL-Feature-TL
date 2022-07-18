@@ -57,15 +57,18 @@ class BinaryABC:
             self.FE += self.operator_pool[op_no].costFE()
             candidate = self.operator_pool[op_no].get_candidate(candidate, neighbor)
             self.operator_selector.add_reward(op_no, candidate, self.colony[i])
+            
             self.colony[i] = self.colony[i].get_better(candidate)
+            if self.colony[i].cost > self.global_best.cost:
+                self.global_best = copy.deepcopy(self.colony[i])
 
     def onlooker_bee(self):
         self.calculate_cdf()
-        max_fitness = max([bee.fitness for bee in self.colony])
+        max_cost = max([bee.cost for bee in self.colony])
         t = 0
         i = 0
         while t < self.pop_size:
-            if np.random.random() < self.colony[i].fitness / max_fitness:
+            if np.random.random() < self.colony[i].cost / max_cost:
                 t += 1
                 candidate = copy.deepcopy(self.colony[i])
                 neighbor = self.neighbor_selection()
@@ -74,8 +77,13 @@ class BinaryABC:
                 op_no = self.operator_selector.operator_selection(candidate)
                 self.FE += self.operator_pool[op_no].costFE()
                 candidate = self.operator_pool[op_no].get_candidate(candidate, neighbor)
+                
                 self.operator_selector.add_reward(op_no, candidate, self.colony[i])
+                    
                 self.colony[i] = self.colony[i].get_better(candidate)
+                if self.colony[i].cost > self.global_best.cost:
+                    self.global_best = copy.deepcopy(self.colony[i])
+
             i += 1
             i = i % self.pop_size
 
@@ -92,10 +100,9 @@ class BinaryABC:
         best_solution = max(self.colony, key=lambda b: b.cost)
         if best_solution.cost < self.global_best.cost and self.problem.ptype==0:
             self.global_best = copy.deepcopy(best_solution)
-            self.convergence.append((self.iteration, best_solution.cost))
         elif  best_solution.cost > self.global_best.cost and self.problem.ptype:
             self.global_best = copy.deepcopy(best_solution)
-            self.convergence.append((self.iteration, best_solution.cost))
+        self.convergence.append((self.iteration, best_solution.cost))
 
             
 
@@ -103,8 +110,8 @@ class BinaryABC:
 
     def calculate_cdf(self):
         #CDF
-        sum_fitness = sum([x.fitness for x in self.colony])
-        self.probabilities = list(accumulate([x.fitness / sum_fitness for x in self.colony]))
+        sum_fitness = sum([x.cost for x in self.colony])
+        self.probabilities = list(accumulate([x.cost / sum_fitness for x in self.colony]))
 
     def neighbor_selection(self):
         r = np.random.random()
@@ -126,13 +133,6 @@ class BinaryABC:
     
             parents = copy.deepcopy(self.colony)
             p_gbest = copy.deepcopy(self.global_best)
-
-            # parent_std = np.std([a.cost for  a in self.colony])
-            # parent_mean = np.mean([a.trial for  a in self.colony])
-            # best_known = best_solution.cost
-            # sum_columns = np.std([a.solution for  a in self.colony],axis=0)
-            # diff_bits = np.sum(sum_columns)/self.problem.dimension
-
             for b in self.colony:
                 b.prev_solution = b.solution.copy()
                 b.prev_cost = b.cost

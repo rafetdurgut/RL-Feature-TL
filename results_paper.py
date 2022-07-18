@@ -2,6 +2,7 @@
 import csv
 from itertools import product
 from re import I
+from scipy.stats import rankdata
 
 import pandas as pd
 from Problem import *
@@ -38,20 +39,14 @@ stds = []
 
 
 c=dict()
-c["Method"] = "average"
-c["W"] = 50
+c["Method"] = "extreme"
+c["W"] = 25
 c["eps"] = 0.3
-c["alpha"] = 0.5
+c["alpha"] = 0.9
 c["gama"] = 0.5
 c["reward"] = 0
 
 
-c2=dict()
-c2["Method"] = "extreme"
-c2["W"] = 25
-c2["eps"] = 0.3
-c2["alpha"] = 0.9
-c2["gama"] = 0.5
 
 filenames=[]
 ss=[]
@@ -85,75 +80,76 @@ data_CRL_L_std =[]
 ind = 0
 data_means = np.zeros((30,4))
 data_maxs = []
-for pno in np.arange(500,5001,250):
-# for pno in np.arange(0,30):
+all_results = []
+# for pno in np.arange(500,5001,250):
+for pno in np.arange(0,30):
     
-    # problem=SetUnionKnapsack('Data/SUKP',pno)
-    problem = OneMax(pno)
+    problem=SetUnionKnapsack('Data/SUKP',pno)
+    # problem = OneMax(pno)
 
     learned = False
     filenames.append(problem.dosyaAdi)
     
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-False-1-{problem.dosyaAdi}.csv"
+    file_name = f"results_27June/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-False-0-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_random.append(data)
     data_random_max.append(np.max(data))
     data_random_mean.append(np.mean(data))
     data_random_std.append(np.std(data))
     
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{learned}-1-{problem.dosyaAdi}.csv"
+    file_name = f"results_27June/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-{learned}-{c['reward']}-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_RL.append(data)
     data_RL_mean.append(np.mean(data))
     data_RL_max.append(np.max(data))
     data_RL_std.append(np.std(data))
 
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-{learned}-1-{problem.dosyaAdi}.csv"
+    file_name = f"results_27June/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-{learned}-{c['reward']}-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_CRL.append(data)
     data_CRL_mean.append(np.mean(data))
     data_CRL_max.append(np.max(data))
     data_CRL_std.append(np.std(data))
 
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-True-1-{problem.dosyaAdi}.csv"
+    file_name = f"results_27June/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-0-True-{c['reward']}-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_RL_L.append(data)
     data_RL_L_mean.append(np.mean(data))
     data_RL_L_max.append(np.max(data))
     data_RL_L_std.append(np.std(data))
 
-    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-True-1-{problem.dosyaAdi}.csv"
+    file_name = f"results_27June/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-True-1-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_CRL_L.append(data)
     data_CRL_L_mean.append(np.mean(data))
     data_CRL_L_max.append(np.max(data))
     data_CRL_L_std.append(np.std(data))
-
-    data_means[ind][0] = data_random_mean[ind]
-    data_means[ind][1] = data_RL_mean[ind]
-    data_means[ind][2] = data_CRL_mean[ind]
-    data_means[ind][3] = data_RL_L_mean[ind]
-    data_means[ind][4] = data_CRL_L_mean[ind]
-    data_means[ind][0] = data_RL_mean[ind]
-    data_means[ind][1] = data_CRL_mean[ind]
-    data_means[ind][2] = data_RL_L_mean[ind]
-    data_means[ind][3] = data_CRL_L_mean[ind]
-
+    # data_means[ind][0] = data_random_mean[ind]
+    # data_means[ind][1] = data_RL_mean[ind]
+    # data_means[ind][2] = data_CRL_mean[ind]
+    # data_means[ind][3] = data_RL_L_mean[ind]
+    # data_means[ind][4] = data_CRL_L_mean[ind]
+    # data_means[ind][0] = data_RL_mean[ind]
+    # data_means[ind][1] = data_CRL_mean[ind]
+    # data_means[ind][2] = data_RL_L_mean[ind]
+    # data_means[ind][3] = data_CRL_L_mean[ind]
+    try:
+        if (data_CRL_mean[ind] != data_RL_mean[ind]) and (len(data_RL_L[ind]) == len(data_CRL_L[ind])):
+            print(len(data_random[ind]))
+            # w,p1 = wilcoxon(data_random[ind],data_RL[ind])
+            # w,p2 = wilcoxon(data_random[ind],data_CRL[ind])
+            w,p1 = wilcoxon(data_RL_L[ind],data_RL[ind])
+            w,p2 = wilcoxon(data_CRL_L[ind],data_CRL[ind])
+            ss.append(p1)
+        else:
+            ss.append(1)
+    except: 
+         ss.append(1)
     
-    # print(data_random_mean[ind])
-    # print(data_CRL_mean[ind])
-    # print(data_RL_mean[ind])
-    # print(len(data_RL[ind]))
-    # print(len(data_CRL[ind]))
-    # w,p = wilcoxon(data_RL[ind],data_random[ind])
-    # if (data_CRL_mean[ind] != data_RL_mean[ind]) and (len(data_RL[ind]) == len(data_CRL[ind])):
-    #     w,p = wilcoxon(data_RL[ind],data_CRL[ind])
-    #     print(p)
-    #     print(pno)
-        
-    # ss.append(p)
-    # else:
-    #     ss.append(1)
+    # ranks = (4 - rankdata([data_random_mean[ind],data_RL_mean[ind],data_CRL_mean[ind]]).astype(int) )
+    ranks = (5 - rankdata([data_RL_max[ind],data_RL_L_max[ind],data_CRL_max[ind],data_CRL_L_max[ind]]).astype(int) )
+    # all_results.append([ranks[0],data_random_max[ind], data_random_mean[ind] ,data_random_std[ind], ranks[1],data_RL_max[ind], data_RL_mean[ind] ,data_RL_std[ind],p1, ranks[2],data_CRL_max[ind], data_CRL_mean[ind] ,data_CRL_std[ind],p2])
+    all_results.append([ranks[0],data_RL_max[ind], data_RL_mean[ind] ,data_RL_std[ind], ranks[1],data_RL_L_max[ind], data_RL_L_mean[ind] ,data_RL_L_std[ind],p1, ranks[2],data_CRL_max[ind], data_CRL_mean[ind] ,data_CRL_std[ind],ranks[3],data_CRL_L_max[ind], data_CRL_L_mean[ind] ,data_CRL_L_std[ind],p2])
     ind += 1
 
 ps = []
@@ -162,11 +158,8 @@ ps = []
 # print([data_CRL_max, data_CRL_mean , data_CRL_std])
 # print(data_random_mean)
 print(data_means)
-from scipy.stats import rankdata
-ranks = []
-for i in range(19):
-    ranks.append(1+len(data_means[i]) - rankdata(data_means[i]).astype(int) )
-
-pd_data = pd.DataFrame(data_means,columns=['random','one run','all run','one run w/l','all run w/l'])
+with open('myfile.csv', 'w', newline='') as file:
+    mywriter = csv.writer(file, delimiter=',')
+    mywriter.writerows(all_results)
 print(ranks)
 print(np.mean(ranks,axis=0))

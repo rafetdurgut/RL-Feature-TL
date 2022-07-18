@@ -20,8 +20,6 @@ gama = float(sys.argv[6])
 learning_mode = int(sys.argv[7])
 loadFileName=sys.argv[8]
 reward_func = int(sys.argv[9])
-credit_func = int(sys.argv[10])
-load_func = int(sys.argv[11])
 if loadFileName == "None":
     loadFileName = None
 
@@ -29,7 +27,7 @@ if loadFileName == "None":
 problem= OneMax(pNo)
 abc = BinaryABC(problem, pop_size=20, maxFE=250*40, limit=50)
 operator_pool = [flipABC(), nABC(), ibinABC(), NBABC() ]
-parameters = { 'operator_size': len(operator_pool),'reward_type': rewardType, 'W':W, 'alpha':alpha, 'gama':gama, 'eps':eps, 'learning_mode':learning_mode, 'load_file':loadFileName, 'reward_func':reward_func,'credit_func':credit_func,'load_func':load_func}
+parameters = { 'operator_size': len(operator_pool),'reward_type': rewardType, 'W':W, 'alpha':alpha, 'gama':gama, 'eps':eps, 'learning_mode':learning_mode, 'load_file':loadFileName, 'reward_func':reward_func}
 operator_selectors = CLRL(parameters)
 alg_outs = ["convergence"]
 aos_outs = ["operator_informations","clusters","credits","cluster_update_counts"]
