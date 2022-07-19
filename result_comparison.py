@@ -23,7 +23,7 @@ def get_best_data(fileName, operator_size):
 import numpy as np
 
 
-parameters = {"pNo":[0],"Method": ["extreme"], "W": [25,250], "eps": [0.3], "alpha": [0.5,0.9],"gama": [0.5],"learning_mode":[0,1],"loadFileName":["None"],"reward_func":[0,1]}
+parameters = {"pNo":[0],"Method": ["extreme"], "W": [25,250], "eps": [0.3], "alpha": [0.5,0.9],"gama": [0.5],"learning_mode":[0],"loadFileName":["None"],"reward_func":[0,1]}
 configurations = [dict(zip(parameters, v)) for v in product(*parameters.values())]
 for c in configurations:
 
@@ -74,6 +74,7 @@ for c in configurations:
         # print(data_random_mean[ind])
         if (data_CRL_mean[ind] != data_RL_mean[ind]) and (len(data_RL[ind]) == len(data_CRL[ind])):
             w,p = wilcoxon(data_RL[ind],data_CRL[ind])
+            
             ss.append(p)
         else:
             ss.append(1)
@@ -83,6 +84,7 @@ for c in configurations:
     # print([data_RL_max,data_RL_mean , data_RL_std])
     # print([data_CRL_max, data_CRL_mean , data_CRL_std])
     # print(data_random_mean)
+    print(ss)
     print(c)
     print(data_RL_mean)
     print(data_CRL_mean)
