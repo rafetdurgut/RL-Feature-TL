@@ -84,7 +84,6 @@ for c in configurations:
     # print([data_RL_max,data_RL_mean , data_RL_std])
     # print([data_CRL_max, data_CRL_mean , data_CRL_std])
     # print(data_random_mean)
-    print(len(ss<0.05))
     print(c)
     print(data_RL_mean)
     print(data_CRL_mean)
@@ -92,5 +91,5 @@ for c in configurations:
     print(data_RL_max)
     print(data_CRL_max)
     print('-'*50)
-    print(sum(map(lambda x : x%2 == 1, ss)))
+    print(sum(map(lambda x : x<0.05, ss)))
 
