@@ -44,7 +44,7 @@ c["W"] = 25
 c["eps"] = 0.3
 c["alpha"] = 0.9
 c["gama"] = 0.5
-c["reward"] = 0
+c["reward"] = 1
 
 
 
@@ -81,16 +81,16 @@ ind = 0
 data_means = np.zeros((30,4))
 data_maxs = []
 all_results = []
-# for pno in np.arange(500,5001,250):
-for pno in np.arange(0,30):
+for pno in np.arange(500,5001,250):
+# for pno in np.arange(0,30):
     
-    problem=SetUnionKnapsack('Data/SUKP',pno)
-    # problem = OneMax(pno)
+    # problem=SetUnionKnapsack('Data/SUKP',pno)
+    problem = OneMax(pno)
 
     learned = False
     filenames.append(problem.dosyaAdi)
     
-    file_name = f"results_27June/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-False-0-{problem.dosyaAdi}.csv"
+    file_name = f"results_27June/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-False-1-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_random.append(data)
     data_random_max.append(np.max(data))
@@ -136,20 +136,20 @@ for pno in np.arange(0,30):
     try:
         if (data_CRL_mean[ind] != data_RL_mean[ind]) and (len(data_RL_L[ind]) == len(data_CRL_L[ind])):
             print(len(data_random[ind]))
-            # w,p1 = wilcoxon(data_random[ind],data_RL[ind])
-            # w,p2 = wilcoxon(data_random[ind],data_CRL[ind])
-            w,p1 = wilcoxon(data_RL_L[ind],data_RL[ind])
-            w,p2 = wilcoxon(data_CRL_L[ind],data_CRL[ind])
+            w,p1 = wilcoxon(data_random[ind],data_RL[ind])
+            w,p2 = wilcoxon(data_random[ind],data_CRL[ind])
+            # w,p1 = wilcoxon(data_RL_L[ind],data_RL[ind])
+            # w,p2 = wilcoxon(data_CRL_L[ind],data_CRL[ind])
             ss.append(p1)
         else:
             ss.append(1)
     except: 
          ss.append(1)
     
-    # ranks = (4 - rankdata([data_random_mean[ind],data_RL_mean[ind],data_CRL_mean[ind]]).astype(int) )
-    ranks = (5 - rankdata([data_RL_max[ind],data_RL_L_max[ind],data_CRL_max[ind],data_CRL_L_max[ind]]).astype(int) )
-    # all_results.append([ranks[0],data_random_max[ind], data_random_mean[ind] ,data_random_std[ind], ranks[1],data_RL_max[ind], data_RL_mean[ind] ,data_RL_std[ind],p1, ranks[2],data_CRL_max[ind], data_CRL_mean[ind] ,data_CRL_std[ind],p2])
-    all_results.append([ranks[0],data_RL_max[ind], data_RL_mean[ind] ,data_RL_std[ind], ranks[1],data_RL_L_max[ind], data_RL_L_mean[ind] ,data_RL_L_std[ind],p1, ranks[2],data_CRL_max[ind], data_CRL_mean[ind] ,data_CRL_std[ind],ranks[3],data_CRL_L_max[ind], data_CRL_L_mean[ind] ,data_CRL_L_std[ind],p2])
+    ranks = (4 - rankdata([data_random_mean[ind],data_RL_mean[ind],data_CRL_mean[ind]]).astype(int) )
+    # ranks = (5 - rankdata([data_RL_mean[ind],data_RL_L_mean[ind],data_CRL_mean[ind],data_CRL_L_mean[ind]]).astype(int) )
+    all_results.append([ranks[0],data_random_max[ind], data_random_mean[ind] ,data_random_std[ind], ranks[1],data_RL_max[ind], data_RL_mean[ind] ,data_RL_std[ind],p1, ranks[2],data_CRL_max[ind], data_CRL_mean[ind] ,data_CRL_std[ind],p2])
+    # all_results.append([ranks[0],data_RL_max[ind], data_RL_mean[ind] ,data_RL_std[ind], ranks[1],data_RL_L_max[ind], data_RL_L_mean[ind] ,data_RL_L_std[ind],p1, ranks[2],data_CRL_max[ind], data_CRL_mean[ind] ,data_CRL_std[ind],ranks[3],data_CRL_L_max[ind], data_CRL_L_mean[ind] ,data_CRL_L_std[ind],p2])
     ind += 1
 
 ps = []
