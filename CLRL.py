@@ -123,7 +123,6 @@ class CLRL:
             r = float(( new_cost > old_cost)) * (self.algorithm.global_best.cost/new_cost)
         else:
             r =  float(( new_cost - old_cost)) * (self.algorithm.global_best.cost/new_cost)
-        return r
         return max(0,r)
 
     #Operator used and supply feedback
