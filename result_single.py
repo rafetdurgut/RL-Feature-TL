@@ -80,11 +80,11 @@ for pno in np.arange(500,5001,250):
     # filenames.append(problem.dosyaAdi)
     
     file_name = f"results/convergence-CLRL-4-average-0.3-25-0.5-0.5-1-None-0-{problem.dosyaAdi}.csv"
-    # data =get_best_data(file_name, 3)
-    # data_RL.append(data)
-    # data_RL_mean.append(np.mean(data))
-    # data_RL_max.append(np.max(data))
-    # data_RL_std.append(np.std(data))
+    data =get_best_data(file_name, 3)
+    data_RL.append(data)
+    data_RL_mean.append(np.mean(data))
+    data_RL_max.append(np.max(data))
+    data_RL_std.append(np.std(data))
 
 
 ps = []
