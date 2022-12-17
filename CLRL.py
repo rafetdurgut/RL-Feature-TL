@@ -37,7 +37,7 @@ class CLRL:
     def __init__(self, parameters):
         #General informations
         self.parameters = parameters
-        self.parameters["max_period"] = 5
+        self.parameters["max_period"] = 1
         self.informations = dict({'iteration_number':0, 'period_number':0})
         self.cluster_history = []
         self.credit_history = []

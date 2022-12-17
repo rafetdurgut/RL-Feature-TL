@@ -53,11 +53,10 @@ filenames=[]
 ss=[]
 from scipy.stats import wilcoxon
 ps = []
-for pno in range(1):
-    problem=SetUnionKnapsack('Data/SUKP',4)
+for pno in range(30):
+    problem=SetUnionKnapsack('Data/SUKP',pno)
     # problem = OneMax(500)
     filenames.append(problem.dosyaAdi)
-    
     file_name = f"results/convergence-CLRL-3-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_fe.append(data)

@@ -5,19 +5,23 @@ from Problem  import *
 from Operators import *
 show_convergences = True 
 rewardType = "extreme"
-W = 25
+W = 250
 eps = 0.3
-alpha = 0.1
+alpha = 0.9
 gama = 0.9
+reward_func = 0
 o="CLRL"
 operator_pool = [ flipABC(), nABC(), ibinABC(), NBABC() ]
 operator_size = len(operator_pool)
 
 # for i in range(2500,5001, 250):
 #     pName=i
-for i in range(2500,2501):
+for i in range(5000,5000):
     pName=i
-    file_path = f"results/operator_informations-{o}-{operator_size}-{rewardType}-{eps}-{W}-{alpha}-{gama}-0-None-1-{pName}.csv"
+   
+    
+
+    file_path = f"results/operator_informations-{o}-{operator_size}-{rewardType}-{eps}-{W}-{alpha}-{gama}-0-False-{reward_func}-{pName}.csv"
     columns = ["op_no","run","cg","iteration","credits","rewards","usages","success"]  
     df_0= pd.read_csv(file_path, header=None,names=columns)
     data_0 = df_0.groupby('iteration',as_index=False)['cg'].mean()
@@ -26,7 +30,7 @@ for i in range(2500,2501):
     
     
 
-    file_path = f"results/operator_informations-{o}-{operator_size}-{rewardType}-{eps}-{W}-{alpha}-{gama}-1-None-1-{pName}.csv"
+    file_path = f"results/operator_informations-{o}-{operator_size}-{rewardType}-{eps}-{W}-{alpha}-{gama}-1-False-{reward_func}-{pName}.csv"
     columns = ["op_no","run","cg","iteration","credits","rewards","usages","success"]  
     df_0= pd.read_csv(file_path, header=None,names=columns)
     data_0 = df_0.groupby('iteration',as_index=False)['cg'].mean()
@@ -36,6 +40,6 @@ for i in range(2500,2501):
   
 
     figss = sns.lineplot(data=data, x="iteration", y="cg", hue="mod", palette="tab10")
-    figss.set(yscale='log')
+    figss.set(yscale='log',xscale='log')
 
     plt.show()

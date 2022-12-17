@@ -5,24 +5,24 @@ import seaborn as sns
 from Problem  import *
 from Operators import *
 show_features = True
-show_datas = True
+show_datas = False
 show_convergences = False 
 rewardType = "extreme"
 eps = 0.3
-alpha = 0.1
-gama = 0.9
+alpha = 0.9
+gama = 0.5
 pNo = 10
-reward_func = 1
-max_run=5
+reward_func = 0
+max_run=10
 w = 25
 learning = 0
-# prob= SetUnionKnapsack('Data/SUKP',pNo)
+# prob= SetUnionKnapsack('Data/SUKP',6)
 # pName = prob.ID
-# prob = OneMax(750)
-pName='2500'
+prob = OneMax(5000)
+pName='5000'
 o="CLRL"
 
-operator_pool = [ flipABC(), ibinABC(), NBABC() ]
+operator_pool = [ flipABC(),nABC(), ibinABC(), NBABC() ]
 operator_size = len(operator_pool)
 
 if show_features:
@@ -37,8 +37,8 @@ if show_features:
     for r in range(max_run):
         temp_df = df[df["run"]==r]
         
-        fig, axes = plt.subplots(5,4)
-        for i in range(5):
+        fig, axes = plt.subplots(3,4)
+        for i in range(3):
             for j in range(4):
                 if (i*4+j)>18:
                     continue
@@ -54,7 +54,7 @@ if show_datas:
     for r in range(max_run):
         temp_df = df[df["run"]==r]
         temp_df['percent']=100*(temp_df['success']/temp_df['usages'])
-        fig, axes = plt.subplots(5,2)
+        fig, axes = plt.subplots(3,2)
         sns.lineplot(data=temp_df, x="iteration", y="credits", hue="op_no", ax=axes[0][0], legend = False, palette="tab10")
         sns.lineplot(data=temp_df, x="iteration", y="rewards", hue="op_no", ax=axes[0][1] ,legend = False, palette="tab10")
         sns.lineplot(data=temp_df, x="iteration", y="usages", hue="op_no", ax=axes[1][0], legend = False, palette="tab10")

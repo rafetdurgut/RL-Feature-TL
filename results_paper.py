@@ -81,6 +81,10 @@ ind = 0
 data_means = np.zeros((30,4))
 data_maxs = []
 all_results = []
+
+for pno in np.arange(0,30):
+    problem=SetUnionKnapsack('Data/SUKP',pno)
+
 for pno in np.arange(500,5001,250):
 # for pno in np.arange(0,30):
     
