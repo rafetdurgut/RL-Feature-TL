@@ -79,14 +79,7 @@ for pno in np.arange(0,30):
     learned = False
     filenames.append(problem.dosyaAdi)
     
-    # file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}--1-False-0-{problem.dosyaAdi}.csv"
-    # data =get_best_data(file_name, 3)
-    # data_random.append(data)
-    # data_random_max.append(np.max(data))
-    # data_random_mean.append(np.mean(data))
-    # data_random_std.append(np.std(data))
-    
-    file_name = f"results27June/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-None-1-1-0-{problem.dosyaAdi}.csv"
+    file_name = f"results/convergence-CLRL-4-{c['Method']}-{c['eps']}-{c['W']}-{c['alpha']}-{c['gama']}-1-None-1-1-0-{problem.dosyaAdi}.csv"
     data =get_best_data(file_name, 3)
     data_RL.append(data)
     data_RL_mean.append(np.mean(data))
@@ -95,9 +88,5 @@ for pno in np.arange(0,30):
 
 
 ps = []
-# print([data_random_max,data_random_mean , data_random_std])
-# print([data_RL_max,data_RL_mean , data_RL_std])
-# print([data_CRL_max, data_CRL_mean , data_CRL_std])
-# print(data_random_mean)
 print(data_RL_mean)
 print(data_RL_max)
